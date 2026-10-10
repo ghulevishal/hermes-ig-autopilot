@@ -1,0 +1,12 @@
+# NEVER commit secrets or local state
+.env
+*.env
+.env.*
+_ig_*.txt
+_oauth_url.txt
+published.jsonl
+insights.jsonl
+.wire_shape.json
+*.log
+.DS_Store
+out/
