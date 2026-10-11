@@ -1,0 +1,166 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>Publishing to Instagram is a distributed write with no rollback — vishalghule.in</title>
+<meta name="description" content="The Content Publishing API has no delete endpoint and no caption edit, which turns a ten-call publish into a transaction whose last step you can never take back — here is the idempotency design that fell out of that constraint.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-11-evening/">
+<meta property="og:title" content="Publishing to Instagram is a distributed write with no rollback — vishalghule.in">
+<meta property="og:description" content="The Content Publishing API has no delete endpoint and no caption edit, which turns a ten-call publish into a transaction whose last step you can never take back — here is the idempotency design that fell out of that constraint.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-11-evening/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">BUILD RECEIPT / 11 OCT 2026</span>
+<h1>Publishing to Instagram is a distributed write with no rollback</h1>
+<p class="lede">The Content Publishing API has no delete endpoint and no caption edit, which turns a ten-call publish into a transaction whose last step you can never take back — here is the idempotency design that fell out of that constraint.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-11</span><span>·</span><span>5 min read</span><span>·</span><a href="https://www.instagram.com/p/DeW2O0Ek-nz/">on Instagram</a></div>
+<article><h2>The constraint nobody writes on the box</h2>
+<p>I run a cron job that builds and publishes an Instagram carousel twice a day. It renders six slides locally, uploads them somewhere public, and hands the URLs to Meta. Boring automation, the kind that should run for a year without attention.</p>
+<p>The thing that made it interesting is a property of the API that is easy to miss until you need it:</p>
+<ul><li><code>DELETE /{ig-media-id}</code> returns <strong>&quot;does not support this operation&quot;</strong>. A <code>GET</code> on the same id works fine, so the id is real and resolvable — there just is no deletion endpoint.</li><li>There is no caption update endpoint either.</li></ul>
+<p>Both of those are tested against the live account, not inferred from docs. The practical consequence: <strong>a published post is a permanent write</strong>. If your pipeline ships the wrong thing, the only remediation is a human driving the Instagram web UI — post page, &quot;More options&quot;, Delete, confirm — and then a <code>GET</code> on the id to confirm it 404s.</p>
+<p>Any system where the terminal operation cannot be reversed has to be designed backwards from that fact.</p>
+<h2>What one &quot;publish&quot; actually costs</h2>
+<p>The second surprise is that Instagram never receives your image. You give it a URL and <strong>Meta&#x27;s own servers fetch it</strong>, asynchronously, some time after you ask. Local paths, <code>file://</code>, anything behind auth, and PNG are all rejected. It must be a public https JPEG.</p>
+<p>So a single six-slide carousel decomposes into roughly ten HTTP calls:</p>
+<table><thead><tr><th>#</th><th>Call</th><th>Idempotent?</th></tr></thead><tbody><tr><td>1-6</td><td><code>POST /{user}/media</code> per slide, <code>is_carousel_item=true</code></td><td>Yes — spare containers just expire</td></tr><tr><td>7</td><td><code>POST /{user}/media</code> with <code>media_type=CAROUSEL</code>, children, caption</td><td>Yes</td></tr><tr><td>8</td><td><code>GET /{container}?fields=status_code</code> until <code>FINISHED</code></td><td>Yes, read-only</td></tr><tr><td>9</td><td><code>POST /{user}/media_publish</code> with <code>creation_id</code></td><td><strong>No</strong></td></tr><tr><td>10</td><td><code>GET /{media-id}?fields=permalink</code></td><td>Yes, read-only</td></tr></tbody></table>
+<p>Container creation returns an ID before the image has been fetched, which is why step 8 exists at all. Publish too early and it fails; <code>ERROR</code> from the poll means stop rather than retry. Containers expire after 24 hours, so an abandoned run leaves no garbage worth collecting.</p>
+<p>Nine of those ten calls are free to repeat. One is not, and it is the last one.</p>
+<h2>Why the dangerous call is the one that times out</h2>
+<p>The failure mode is not &quot;the API rejected me&quot;. Rejections are easy — they are explicit, they carry a code, and you stop.</p>
+<p>The failure mode is <strong>ambiguity</strong>. <code>media_publish</code> is a write with a network timeout in front of it. When the socket dies at 30 seconds you do not know whether:</p>
+<ul><li>the request never arrived, or</li><li>it arrived, the post went live, and the response was lost on the way back.</li></ul>
+<p>A naive <code>retry(3)</code> resolves that ambiguity by guessing, and it guesses wrong roughly whenever the second case is true. On a system with a delete endpoint, guessing wrong costs you a cleanup call. Here it costs a duplicate post on a public account, removable only by hand, and the person who has to do the removing is asleep when the 09:00 job runs.</p>
+<p>This is the generic shape of the problem and it is not specific to Instagram: <em>an at-least-once delivery mechanism pointed at a non-idempotent endpoint produces duplicates at exactly the rate your network produces ambiguous failures.</em> Payment authorization has the same structure, which is why every card network protocol carries a retrieval reference number. Instagram does not give you one.</p>
+<h2>What actually worked</h2>
+<p>Three changes, in order of how much they mattered.</p>
+<p><strong>1. Claim the slug before the first call.</strong> The pipeline writes an append-only <code>published.jsonl</code>, one row per live post, keyed by a slug like <code>2026-10-11-evening</code>. The job&#x27;s first action — before rendering, before uploading, before any network call to Meta — is to read that file and exit if its slug is already present. The slug is derived from the date and the slot, not generated randomly, so a rerun of the same job computes the same key.</p>
+<p>That is an idempotency key implemented in the only place available: outside the API, in the caller. It does not protect against a crash in the two-second window between <code>media_publish</code> returning and the row being written. It does protect against every retry that happens after the process dies, which is the overwhelmingly common case — a cron re-fire, a manual rerun, a supervisor restart.</p>
+<p><strong>2. Verify the URLs before Meta sees them.</strong> Because Meta fetches server-side, a broken image URL fails inside <em>its</em> infrastructure, and what you get back is a container stuck in <code>ERROR</code> with little explanation. The host step now runs a chain — commit to a GitHub Pages repo first, then imgbb, catbox, 0x0 as fallbacks — and <code>HEAD</code>s every resulting URL to confirm it is live before any of them are passed on. Verifying a cheap local assumption beats debugging a remote fetch you cannot observe.</p>
+<p><strong>3. Treat the poll as a gate, not a formality.</strong> <code>status_code</code> must read <code>FINISHED</code> before publishing. <code>ERROR</code> is terminal. The temptation to skip it because &quot;it&#x27;s usually ready&quot; is how you convert a recoverable container failure into a half-published carousel.</p>
+<h2>Where this does not apply</h2>
+<p>If your terminal operation <em>is</em> reversible, most of this is overengineering. A pipeline that writes to S3, or posts to an API with a delete endpoint, can lean on at-least-once delivery and clean up afterwards — the cost of a duplicate is one more call.</p>
+<p>The design is also not free. A slug-keyed log is a second source of truth that can disagree with the remote system. If someone deletes a post by hand in the app, the log still claims it exists, and the job will refuse to republish. I accept that: refusing to post is a quiet failure, and posting twice is a loud one. When the cheap failure and the expensive failure point in opposite directions, bias toward the cheap one.</p>
+<p>And none of it closes the real gap, which is the window between the successful publish and the durable log write. Closing that properly needs the remote system to accept a client-supplied key — which is the thing the API does not offer. What is left is making the window as small as possible and accepting a known residual risk, rather than pretending the retry was safe.</p>
+<h2>The rule that generalises</h2>
+<p>Before adding a retry to any pipeline, ask one question about its final call: <em>if this succeeds but the response is lost, what does a retry do?</em> If the answer is &quot;creates a second one, permanently&quot;, the retry is not the feature. The idempotency key is, and it has to be claimed before the first call rather than checked after the last one.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://developers.facebook.com/docs/instagram-platform/content-publishing">Meta, &quot;Instagram Platform — Content Publishing&quot;, Meta for Developers, 2026</a></li><li><a href="https://developers.facebook.com/docs/instagram-platform/content-publishing#publishing-limits">Meta, &quot;Instagram Platform — Publishing limits and container status&quot;, Meta for Developers, 2026</a></li><li><a href="https://vishalghule.in">Measured directly against the live `@vishu_builds` account, 10-11 October 2026: `DELETE /{ig-media-id}` → &quot;does not support this operation&quot;; `GET` on the same id → 200.</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-11-evening/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: Publishing to Instagram is a distributed write with no rollback"><img src="/media/2026-10-11-evening/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: Publishing to Instagram is a distributed write with no rollback"><img src="/media/2026-10-11-evening/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: Publishing to Instagram is a distributed write with no rollback"><img src="/media/2026-10-11-evening/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: Publishing to Instagram is a distributed write with no rollback"><img src="/media/2026-10-11-evening/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: Publishing to Instagram is a distributed write with no rollback"><img src="/media/2026-10-11-evening/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: Publishing to Instagram is a distributed write with no rollback"></div></div>
+<p class="tags">#aiautomation #aiagents #automation #artificialintelligence #aitools #buildinpublic #nocode #productivity #techtok #softwareengineering #startups #devtools</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
