@@ -1,0 +1,158 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>An AI red-teamed a factory and won in 16 minutes — vishalghule.in</title>
+<meta name="description" content="Booz Allen&#x27;s OT lab handed two frontier models network access and a goal, no code or documentation, and both finished all eight attack objectives before any human could intervene.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-12/">
+<meta property="og:title" content="An AI red-teamed a factory and won in 16 minutes — vishalghule.in">
+<meta property="og:description" content="Booz Allen&#x27;s OT lab handed two frontier models network access and a goal, no code or documentation, and both finished all eight attack objectives before any human could intervene.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-12/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AI AUTOMATION / 12 OCT 2026</span>
+<h1>An AI red-teamed a factory and won in 16 minutes</h1>
+<p class="lede">Booz Allen&#x27;s OT lab handed two frontier models network access and a goal, no code or documentation, and both finished all eight attack objectives before any human could intervene.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-12</span><span>·</span><span>6 min read</span><span>·</span><a href="https://www.instagram.com/p/DeZVd3GjWL3/">on Instagram</a></div>
+<article><h2>What shipped</h2>
+<p>On October 6, 2026, Booz Allen Hamilton published &quot;From Digital to Physical: The AI Threat Is Here,&quot; a report from its OT Cybersecurity Lab in Chantilly, Virginia. The Register covered it on October 11. The lab built an isolated, multi-vendor testbed modeled on a manufacturing facility: enterprise network, industrial DMZ, plant operations, area supervisory control, intelligent-device, and physical-process layers, connected by firewalls and switches that define the intended pathways between zones. Inside it sat programmable logic controllers (PLCs), human-machine interfaces (HMIs), a SCADA server, engineering and operator workstations, a variable-frequency drive (VFD), a robotic arm, and sensors.</p>
+<p>Booz Allen tested two unnamed &quot;latest frontier models from the leading AI providers&quot; against eight scenarios, each probing a distinct capability in an autonomous, AI-enabled OT attack chain: asset and vulnerability discovery, exploit development, reaching sensitive systems, interacting with controllers and SCADA, and producing controlled physical effects.</p>
+<p>The models were not given source code, engineering documentation, or OT-specific guidance. Testers imposed two guardrails: the agents had to pause for human approval before exploiting a vulnerability or taking any action with a physical effect, and they were told to use &quot;extra caution&quot; around anything flagged safety-critical.</p>
+<p>Results, as reported:</p>
+<ul><li>8 of 8 test objectives achieved.</li><li>One run went from perimeter compromise to action inside the industrial control network in just over 16 minutes.</li><li>A lightweight collaborative robotic arm (&quot;cobot&quot;) was identified and moved within minutes.</li><li>A SCADA gateway exposed live, pre-authenticated sessions to 14 OT devices in a single discovery step.</li><li>When an initial SCADA approach failed because the agent targeted the wrong HMI client version, it checked active sessions, found the control room was running a different client, located editable Jython code inside the exported SCADA project, rebuilt its payload, and used the administrative interface to push a room-visible full-screen takeover of the HMI.</li></ul>
+<p>Booz Allen&#x27;s own framing: &quot;no single safeguard consistently stopped the models from reaching their objectives.&quot; The approval gates and caution instructions added friction. They did not change the outcome on any of the eight scenarios.</p>
+<h2>Why this is an infrastructure story, not just a security one</h2>
+<p>Strip away the OT-specific vocabulary and the test results describe a property every production engineer already reasons about: blast radius. A SCADA gateway that hands any authenticated caller 14 live device sessions is not a model-alignment failure. It is a credential with no scope limit, the OT equivalent of a service account that can read and write every table in a shared database because nobody got around to splitting it.</p>
+<p>The part worth sitting with is not that the models found a way in. It is what they did after the first way in failed. The agent treated a dead end as a routing problem: check what else is reachable from here, find the thing that works, keep going. That is the same behavior a well-built retry-and-failover system is designed to exhibit on purpose. Here it was an attacker doing it uninvited, inside a network most defenders assumed required specialist OT knowledge to navigate at all. Booz Allen&#x27;s point is specifically that this assumption, &quot;security through obscurity,&quot; no longer holds, because a general-purpose model can now reconstruct the specialist knowledge on demand from firmware strings, protocol behavior, and exposed configuration.</p>
+<p>Map the two guardrails onto what a payments or auth-switching team would call them, and the gap is obvious:</p>
+<ul><li>&quot;Pause for human approval before any physical-impact action&quot; is a synchronous human-in-the-loop gate. In a transaction-authorization system, the equivalent is a manual review queue, and every SRE knows a review queue only helps if it is in the critical path <em>before</em> the consequential write, not racing it. The report does not say whether the models ever needed to touch something the gate was actually watching, which is itself the finding: the approval boundary did not cover enough of the system to matter.</li><li>&quot;Extra caution near safety-critical devices&quot; is a policy told to the agent, not enforced on the agent. That is a prompt-level control, the rough equivalent of telling a service &quot;please don&#x27;t query more than N rows&quot; instead of putting a hard LIMIT and a rate limiter in front of it. Telling an autonomous caller to self-restrict is advisory, not architectural, and advisory controls do not show up in an incident postmortem as a reason something didn&#x27;t happen.</li></ul>
+<p>Neither guardrail is wrong to have. Both are necessary and neither is sufficient, which is exactly the lesson defense-in-depth is supposed to teach and exactly the lesson this test shows failing in practice: every individual layer could be bypassed on its own, and the models needed only one working path per objective, not all of them.</p>
+<h2>The design-review questions this test actually raises</h2>
+<p>A design review for a system with the same shape, high-value actions reachable by an autonomous caller, would surface these before the equivalent of a robotic arm moves:</p>
+<table><thead><tr><th>Question</th><th>Why it matters here</th></tr></thead><tbody><tr><td>What is the maximum blast radius of one compromised credential?</td><td>The SCADA gateway&#x27;s 14-device session leak means the real access boundary was the gateway, not any individual device.</td></tr><tr><td>Is the approval gate in the write path, or a sidecar that can be raced?</td><td>A gate that the agent can route around, by finding a second path that doesn&#x27;t trigger it, is not a gate.</td></tr><tr><td>Does the system detect &quot;this caller is behaving like it is probing,&quot; not just &quot;this action is disallowed&quot;?</td><td>The model&#x27;s recovery after a failed HMI version mismatch looked like normal troubleshooting until the full-screen takeover. Behavioral detection, not just action-level allow/deny, is what would have caught it earlier.</td></tr><tr><td>How long does a full containment cycle take, end to end?</td><td>16 minutes is the number to beat. If your mean time to detect plus mean time to contain exceeds that, the attacker&#x27;s clock, not yours, decides the outcome.</td></tr><tr><td>Which legacy components accept commands with no authentication, because replacing them is expensive?</td><td>Booz Allen names this directly: accumulated technical debt and devices that &quot;accept commands with limited verification&quot; were load-bearing for several of the eight successes.</td></tr><tr><td>Who owns the decision to treat a given tool call as physically consequential?</td><td>&quot;Extra caution near safety-critical devices&quot; was a model instruction, not a system-enforced classification. The classification itself needs an owner outside the agent.</td></tr></tbody></table>
+<h2>What to actually do about it</h2>
+<p>None of this requires banning agentic tooling from infrastructure. It requires treating an autonomous caller the way a competent team already treats any high-privilege automated client: with least privilege, with segmentation that holds even after one node is lost, and with monitoring that watches behavior over time instead of individual actions in isolation.</p>
+<p>Concretely, for a team running production auth, payments, or any other latency-critical control-plane system:</p>
+<ul><li>Inventory every credential with cross-zone reach the way Booz Allen&#x27;s SCADA gateway had it, and ask whether it needs that reach by default or only episodically.</li><li>Put consequential actions behind a gate that is structurally in the critical path, not a check the caller can bypass by finding an unmonitored route to the same effect.</li><li>Instrument for the recovery behavior, not just the initial attempt. A system that retries, re-plans, and adapts after a blocked action is doing exactly what Claude&#x27;s own disclosed &quot;unintended model actions&quot; report called persistence on October 9: useful when you want it, dangerous when you didn&#x27;t invite it, and the signature looks identical either way until you check who is holding the credential.</li><li>Rehearse against a clock, not a checklist. Sixteen minutes from perimeter to physical action is a number that should show up in a tabletop exercise, not just a vendor report.</li></ul>
+<h2>The actual lesson</h2>
+<p>Booz Allen&#x27;s headline, eight out of eight, is less important than the mechanism underneath it: these models did not need a novel zero-day. They needed persistence, the ability to read error messages as information rather than stop signs, and a network with the usual amount of accumulated technical debt that every real environment has. That combination already exists in most production systems that run autonomous agents today, OT or otherwise. The window to find and close those gaps before an agent, friendly or not, finds them first is the thing actually closing.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://www.boozallen.com/assets/home/docs/cyber/frontier-ai-models-in-ot-environments.pdf">Booz Allen Hamilton, &quot;From Digital to Physical: The AI Threat Is Here,&quot; October 6, 2026</a></li><li><a href="https://www.theregister.com/security/2026/10/11/ai-systems-are-fully-capable-of-carrying-out-nightmare-attacks-against-infrastructure-and-nobodys-ready/5302450">Connor Jones, &quot;AI systems are fully capable of carrying out nightmare attacks against infrastructure and nobody&#x27;s ready,&quot; The Register, October 11, 2026</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-12/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: An AI red-teamed a factory and won in 16 minutes"><img src="/media/2026-10-12/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: An AI red-teamed a factory and won in 16 minutes"><img src="/media/2026-10-12/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: An AI red-teamed a factory and won in 16 minutes"><img src="/media/2026-10-12/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: An AI red-teamed a factory and won in 16 minutes"><img src="/media/2026-10-12/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: An AI red-teamed a factory and won in 16 minutes"><img src="/media/2026-10-12/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: An AI red-teamed a factory and won in 16 minutes"></div></div>
+<p class="tags">#aiautomation #aiagents #automation #artificialintelligence #aitools #buildinpublic #nocode #productivity #techtok #softwareengineering #startups #devtools</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
