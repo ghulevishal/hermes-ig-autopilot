@@ -1,0 +1,160 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>AI writes the code in seconds. Your team debugs it for 16.9 hours a week. — vishalghule.in</title>
+<meta name="description" content="A survey of 300 engineering leaders running mission-critical systems found 81% had a production incident linked to AI coding tools in six months — and the interesting part is not the number, it is which stage of the pipeline absorbed the cost.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-14/">
+<meta property="og:title" content="AI writes the code in seconds. Your team debugs it for 16.9 hours a week. — vishalghule.in">
+<meta property="og:description" content="A survey of 300 engineering leaders running mission-critical systems found 81% had a production incident linked to AI coding tools in six months — and the interesting part is not the number, it is which stage of the pipeline absorbed the cost.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-14/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AI AUTOMATION / 14 OCT 2026</span>
+<h1>AI writes the code in seconds. Your team debugs it for 16.9 hours a week.</h1>
+<p class="lede">A survey of 300 engineering leaders running mission-critical systems found 81% had a production incident linked to AI coding tools in six months — and the interesting part is not the number, it is which stage of the pipeline absorbed the cost.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-14</span><span>·</span><span>6 min read</span><span>·</span><a href="https://www.instagram.com/p/DedRmcxkygj/">on Instagram</a></div>
+<article><h2>What shipped, and when</h2>
+<p>On 12 October 2026, LeadDev published Chris Stokel-Walker&#x27;s write-up of a research report from Undo, a debugging-tools vendor. The underlying fieldwork was run by Coleman Parkes during July and August 2026: 300 senior engineering leaders — 200 in the United States, 100 in the UK — at organisations above $250m revenue, all of them shipping mission-critical software on large, complex codebases. 93% of respondents work in C/C++. Sectors included financial services, networking, semiconductor design, computational software and data management.</p>
+<p>The headline: 81% said their organisation had a production incident or service outage linked to its use of AI coding tools in the previous six months. 14% said it happened multiple times a month.</p>
+<p>The rest of the table matters more than the headline:</p>
+<table><thead><tr><th>Problem attributed to AI coding tools</th><th>At least once in six months</th><th>Multiple times a month</th></tr></thead><tbody><tr><td>Production incident or outage affecting users</td><td>81%</td><td>14%</td></tr><tr><td>Root cause misdiagnosed because of a hallucination</td><td>93%</td><td>18%</td></tr><tr><td>Test escapes, serious defects or poor code in prod</td><td>91%</td><td>8%</td></tr><tr><td>Budget overrun from repeated agent runs</td><td>93%</td><td>19%</td></tr></tbody></table>
+<p>And the throughput numbers: engineers now average 16.9 hours a week debugging against 9.8 hours producing code. 35% of AI-generated code reaches production before the team fully understands it. 79% of leaders say release cycles are no faster than before AI. 80% say agents struggle on hard problems in complex codebases.</p>
+<h2>Read the methodology before you quote the number</h2>
+<p>Undo sells a record-and-replay debugger and is positioning it as the runtime-context layer for coding agents. The report has no pre-adoption incident rate, no non-AI control group, and no measure of outage severity or duration. So 81% is the share of leaders who reported an experience, not the share of deployments that failed, and nothing here establishes how much AI changed operational risk versus the baseline.</p>
+<p>That caveat does not make the data useless. It makes it a different kind of evidence: a distribution of failure <em>modes</em>, not a delta in failure <em>rate</em>. The failure modes are the part you can act on.</p>
+<h2>The architectural read: a pipeline stage lost its rate limit</h2>
+<p>Every delivery pipeline is a chain of stages with different throughput. Specification, implementation, review, test, deploy, operate. Classic queueing theory applies: the system&#x27;s throughput is set by the slowest stage, and speeding up a non-bottleneck stage does not increase throughput — it increases the queue in front of the real one.</p>
+<p>For twenty years implementation was treated as the bottleneck, so that is where tooling investment went. Coding agents removed that constraint convincingly. The 79% who report no faster releases are the measured consequence: the constraint moved to comprehension and review, which received no corresponding capacity.</p>
+<p>If you run infrastructure, you have seen this exact shape before:</p>
+<ul><li><strong>An unthrottled producer in front of a fixed-capacity consumer.</strong> Generation is now effectively unbounded; human review capacity is fixed at roughly one engineer-week per engineer-week. Without admission control at the merge boundary, the queue grows without limit and latency (time from code written to code understood) goes to infinity. 35% reaching production un-comprehended is the overflow.</li><li><strong>A circuit breaker with no error signal.</strong> Mark Williamson&#x27;s &quot;code machine gun&quot; line is exactly the failure a breaker exists to prevent: high output volume with no linked improvement in verification. A breaker needs an error rate to trip on. Lines merged is not that signal; change-failure rate is.</li><li><strong>Cache poisoning in the diagnosis path.</strong> This is the 93% hallucinated-root-cause number, and it is the most dangerous one. A plausible wrong diagnosis is worse than no diagnosis because it terminates the search. In incident terms it extends MTTR while <em>appearing</em> to shorten it — the team commits to a hypothesis early and burns the mitigation window on it.</li><li><strong>Blast radius without a bulkhead.</strong> In payment authorisation, the question is never &quot;does this code work&quot; but &quot;what does it do to the authorisation path at p99 under a regional failover&quot;. Agents are good at local correctness and weak on exactly the properties that only exist at system scale: timeout budgets inherited across hops, idempotency on retry, backpressure behaviour, and the undocumented interdependencies the report describes as &quot;locked inside the heads of experienced engineers&quot;.</li></ul>
+<p>The economic framing is cost per transaction. If generating a change got 10x cheaper and verifying it stayed flat, the verification cost now dominates the unit economics of a change. Any optimisation that ignores the dominant term is not an optimisation.</p>
+<h2>The design review I would actually run</h2>
+<p>These are the questions worth asking before an agent-written change merges into a system where failure is expensive.</p>
+<table><thead><tr><th>Question</th><th>Why it matters</th><th>What a passing answer looks like</th></tr></thead><tbody><tr><td>Can the reviewer restate the diff with the agent closed?</td><td>Comprehension is the constraint; review that cannot be done unaided is not review</td><td>A verbal walkthrough of control flow and failure paths, unprompted</td></tr><tr><td>What runtime evidence ships with this PR?</td><td>Green tests prove the paths you thought of; the escapes are the ones you did not</td><td>A trace, a profile, a recording, or a reproduced failure — not just CI green</td></tr><tr><td>What is the rollback, and who has run it?</td><td>Reversibility is the only real mitigation for un-comprehended change</td><td>A named, rehearsed path with a time bound</td></tr><tr><td>Is the stated root cause supported by a trace?</td><td>93% misdiagnosis rate; plausibility is not evidence</td><td>A log line, a stack, a timestamp — something falsifiable</td></tr><tr><td>What is the timeout and retry budget of every new call?</td><td>Agents write happy paths; cascading failure lives in the unhappy ones</td><td>Explicit values, inherited from a documented budget</td></tr><tr><td>Is this change idempotent under retry?</td><td>Retries are automatic; duplicate side effects are not</td><td>A key, a dedupe window, or a proof that the operation is naturally idempotent</td></tr><tr><td>Which metric would have caught this in staging?</td><td>If none, staging is theatre for this class of change</td><td>A named SLI with an alert already wired</td></tr><tr><td>Has review capacity been budgeted alongside generation?</td><td>An unthrottled producer needs admission control</td><td>A stated WIP limit on open agent PRs</td></tr></tbody></table>
+<h2>What to measure instead</h2>
+<p>The report&#x27;s own recommendation is the right one: defect rate and mean time to resolution, not lines of code. In DORA terms that is change-failure rate and time to restore, and both are already instrumented in most organisations — the work is to segment them by whether a change was agent-authored, which almost nobody is doing yet.</p>
+<p>Two additions worth instrumenting for yourself:</p>
+<ul><li><strong>Comprehension lag</strong>: time between a change merging and any human other than the author being able to explain it. Hard to measure precisely, cheap to approximate from review-depth signals.</li><li><strong>Diagnosis reversal rate</strong>: how often an incident&#x27;s stated root cause is overturned later. That is the local version of the 93% number, and unlike a vendor survey it is yours.</li></ul>
+<h2>The honest conclusion</h2>
+<p>Nothing in this report says do not use coding agents. It says the pipeline rebalanced and most teams have not rebalanced their investment to match. The organisations in this sample spend 63% of their engineering hours on debugging and 37% on writing, and they are still shipping at the pre-AI rate. That is not a model problem. It is a capacity-planning problem at the review stage, and it is solvable with controls that already exist in every mature delivery pipeline — admission control, error-rate breakers, evidence requirements and rollback drills. The only new part is admitting which stage the queue is in front of now.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://leaddev.com/ai/ai-code-causes-real-world-production-outages">Chris Stokel-Walker, &quot;AI code causes real world production outages&quot;, LeadDev, 12 October 2026</a></li><li><a href="https://undo.io/research-report-2026">Undo, &quot;Overcoming the limitations of coding agents in complex software systems&quot; (research report, fieldwork by Coleman Parkes, July–August 2026)</a></li><li><a href="https://magica.com/news/undo-survey-ai-coding-production-incidents">&quot;Undo survey links AI coding to production incidents&quot; (full frequency table and methodology critique), Magica</a></li><li><a href="https://www.odbms.org/2026/09/producing-code-has-never-been-easier-but-ai-generated-bugs-and-rising-debugging-workloads-are-slowing-software-delivery/">&quot;Producing code has never been easier, but AI-generated bugs and rising debugging workloads are slowing software delivery&quot;, ODBMS.org, September 2026</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-14/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: AI writes the code in seconds. Your team debugs it for 16.9 hours a week."><img src="/media/2026-10-14/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: AI writes the code in seconds. Your team debugs it for 16.9 hours a week."><img src="/media/2026-10-14/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: AI writes the code in seconds. Your team debugs it for 16.9 hours a week."><img src="/media/2026-10-14/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: AI writes the code in seconds. Your team debugs it for 16.9 hours a week."><img src="/media/2026-10-14/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: AI writes the code in seconds. Your team debugs it for 16.9 hours a week."><img src="/media/2026-10-14/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: AI writes the code in seconds. Your team debugs it for 16.9 hours a week."></div></div>
+<p class="tags">#aiautomation #aiagents #automation #sre #devops #buildinpublic #reliability #softwareengineering #devtools #productivity #techtok #startups</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
