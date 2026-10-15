@@ -1,0 +1,154 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>The context window on the box is not the one you get — vishalghule.in</title>
+<meta name="description" content="A model advertised at 10,000,000 tokens stops being reliable somewhere near 1,000. That gap is not a bug report — it is the vendor&#x27;s own number measured against an independent benchmark, and it changes how you should budget context.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-15-evening/">
+<meta property="og:title" content="The context window on the box is not the one you get — vishalghule.in">
+<meta property="og:description" content="A model advertised at 10,000,000 tokens stops being reliable somewhere near 1,000. That gap is not a bug report — it is the vendor&#x27;s own number measured against an independent benchmark, and it changes how you should budget context.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-15-evening/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">CONTEXT WINDOWS / 15 OCT 2026</span>
+<h1>The context window on the box is not the one you get</h1>
+<p class="lede">A model advertised at 10,000,000 tokens stops being reliable somewhere near 1,000. That gap is not a bug report — it is the vendor&#x27;s own number measured against an independent benchmark, and it changes how you should budget context.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-15</span><span>·</span><span>3 min read</span><span>·</span><a href="https://www.instagram.com/p/DegyjFuE5H6/">on Instagram</a></div>
+<article><p>Every frontier model is now sold on the size of its context window. Two million tokens. Ten million. The number is printed on the box because it is the easiest thing to compare.</p>
+<p>It is also close to meaningless, because &quot;fits in the window&quot; and &quot;the model still reasons over it&quot; are different claims, and only the first one is being advertised.</p>
+<h2>Effective length</h2>
+<p>Adobe Research&#x27;s NoLiMa benchmark proposes a definition worth adopting: <strong>effective length</strong> is the longest context at which a model still holds 85% of its own short-context score.</p>
+<p>Note the shape of that metric — it compares a model against <em>itself</em>, not against other models. It is not asking &quot;is this model good?&quot;. It is asking &quot;at what length does this model stop being as good as it already was?&quot; That makes it hard to game with raw capability.</p>
+<p>The results are not subtle.</p>
+<table><thead><tr><th>Model</th><th>Advertised</th><th>Effective</th></tr></thead><tbody><tr><td>Llama 4 Scout</td><td>10,000,000</td><td>~1,000</td></tr><tr><td>Gemini 1.5 Pro</td><td>2,000,000</td><td>~2,000</td></tr><tr><td>Llama 3.3 70B</td><td>128,000</td><td>~2,000</td></tr><tr><td>GPT-4o</td><td>128,000</td><td>~8,000</td></tr><tr><td>Command R+</td><td>128,000</td><td>under 1,000</td></tr></tbody></table>
+<p>At 32K tokens — a length most people consider routine — 11 of 13 models tested scored half or less of their own short-context baseline.</p>
+<h2>Why the gap is this wide</h2>
+<p>Needle-in-a-haystack tests, the ones that produced all those &quot;perfect recall at 1M tokens&quot; charts, usually plant a verbatim string and ask for it back. That is a retrieval test, and attention is genuinely good at exact matching over long spans.</p>
+<p>NoLiMa removes the literal overlap. The question and the answer share meaning but not wording, so the model has to do an associative hop rather than a string match. Performance falls off a cliff — which tells you the earlier charts were measuring search, not comprehension.</p>
+<p>This matters for agents specifically, because almost nothing an agent does is a verbatim lookup. It reads a log and infers a cause. It reads a diff and infers an intent. Those are exactly the associative hops that degrade first.</p>
+<h2>Treat context as a budget</h2>
+<p>The practical reframe: context is not a bucket you fill until it overflows. It is a budget you spend, and the exchange rate gets worse the more you spend.</p>
+<ul><li><strong>Measure your own effective length.</strong> Your workload is not the benchmark. Take a task you actually run, double the context, and see whether quality holds. Do it once and you will have a number worth designing around.</li><li><strong>Retrieve the 5 facts, don&#x27;t paste the 50 pages.</strong> Dumping a whole document is the lazy option and it actively degrades the reasoning you wanted.</li><li><strong>Compact at half the window, not at the error.</strong> If you wait for a context-length error you have been operating in the degraded zone for a long time already.</li><li><strong>Match the question&#x27;s wording to the source.</strong> Literal overlap is the thing long-context attention is still reliably good at. Where you control the phrasing, use it.</li><li><strong>Fresh context per subtask beats one long thread.</strong> A new window per step costs tokens; a degraded window costs correctness.</li></ul>
+<h2>The uncomfortable part</h2>
+<p>If effective length is roughly 1–8K for most models, then a large share of long-context architecture built in the last two years is decoration. The window accepted the tokens. Nobody checked whether the answers got worse, because the request did not fail — it just quietly got less right.</p>
+<p>That is the failure mode worth internalising. A context window does not throw an error when you overfill it. It degrades silently, and silent degradation in an unattended agent is indistinguishable from the thing working.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://arxiv.org/abs/2502.05167">NoLiMa: Long-Context Evaluation Beyond Literal Matching, Adobe Research, ICML 2025</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-15-evening/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: The context window on the box is not the one you get"><img src="/media/2026-10-15-evening/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: The context window on the box is not the one you get"><img src="/media/2026-10-15-evening/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: The context window on the box is not the one you get"><img src="/media/2026-10-15-evening/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: The context window on the box is not the one you get"><img src="/media/2026-10-15-evening/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: The context window on the box is not the one you get"><img src="/media/2026-10-15-evening/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: The context window on the box is not the one you get"></div></div>
+<p class="tags">#aiautomation #aiagents #automation #sre #devops #buildinpublic #reliability #softwareengineering #devtools #productivity #llm #startups</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
