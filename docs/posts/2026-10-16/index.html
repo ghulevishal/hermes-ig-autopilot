@@ -1,0 +1,157 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>The bank did not block your agent. It blocked your password. — vishalghule.in</title>
+<meta name="description" content="JPMorgan barred third-party AI agents from customer accounts the same week 35 financial brands signed on to a protocol that gives agents their own scoped identity. Those are not opposite positions.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-16/">
+<meta property="og:title" content="The bank did not block your agent. It blocked your password. — vishalghule.in">
+<meta property="og:description" content="JPMorgan barred third-party AI agents from customer accounts the same week 35 financial brands signed on to a protocol that gives agents their own scoped identity. Those are not opposite positions.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-16/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AI AUTOMATION / 16 OCT 2026</span>
+<h1>The bank did not block your agent. It blocked your password.</h1>
+<p class="lede">JPMorgan barred third-party AI agents from customer accounts the same week 35 financial brands signed on to a protocol that gives agents their own scoped identity. Those are not opposite positions.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-16</span><span>·</span><span>6 min read</span><span>·</span><a href="https://www.instagram.com/p/DeilbvMkwuH/">on Instagram</a></div>
+<article><h2>What shipped, and when</h2>
+<p>Three things landed inside 48 hours in the middle of October 2026, and read together they settle an argument that has been running all year about whether AI agents get to touch production accounts.</p>
+<p>On <strong>13 October</strong>, on JPMorgan Chase&#x27;s third-quarter earnings call, Jamie Dimon said the bank is blocking outside AI agents from logging into or acting on customer accounts. &quot;We&#x27;re not going to allow just any outside agent to come in inside the company because that&#x27;s just too risky for clients and for JPMorgan,&quot; he said. &quot;You don&#x27;t want rogue agents.&quot; The bank&#x27;s spokesperson gave the operational version: &quot;When we detect a third-party agent attempting to access accounts by obtaining customers&#x27; banking credentials, we do not allow it. We support secure, customer-authorized data sharing through open banking providers.&quot;</p>
+<p>On <strong>15 October</strong>, Sierra published a draft of the Personal Agent Protocol — Poppy — built with Meta, and announced 35 additional design partners. The list is the interesting part: Bank of America, Wells Fargo, Mastercard, Visa, PayPal, Venmo, Synchrony, Adyen, Plaid, Okta, 1Password, Stripe, Shopify, Walmart, OpenAI.</p>
+<p>Also on <strong>15 October</strong>, the Financial Stability Board published the final version of <em>Sound Practices for Responsible Adoption of Artificial Intelligence</em> — 12 practices, following a June consultation. The FSB said it strengthened the agentic AI recommendations, now holds that more intensive human oversight is critical in higher-risk use cases, and asks firms to set clear, risk-based triggers for when an agent must seek human approval. It also removed a draft guideline that told institutions to treat AI as &quot;synthetic employees,&quot; substituting the observation that &quot;AI agents do not reason like humans and may interpret pre-defined goals in unexpected ways.&quot;</p>
+<p>The headline version of this week is &quot;banks are shutting agents out.&quot; That is not what happened. JPMorgan drew a line at a specific authentication pattern, and the rest of the industry spent the same week standardising the pattern on the other side of that line.</p>
+<h2>The read: this is an authorization problem wearing an AI costume</h2>
+<p>Strip the model out of the story and what is left is familiar. An actor arrives holding the customer&#x27;s primary credential, presents as the customer, and drives an interface built for a human. The institution cannot tell the two apart, cannot scope what the actor is allowed to do, cannot revoke the actor without revoking the human, and gets no log that distinguishes them.</p>
+<p>Anyone who has worked on card infrastructure has seen this film. The industry&#x27;s answer was not &quot;no e-commerce.&quot; It was: stop moving the primary credential, and move a scoped artefact instead — a network token that is restricted to a merchant, a mandate that names an amount and a cadence, an authentication step that produces evidence of who approved what. The credential stays with the issuer. What travels is a narrow permission with a name on it.</p>
+<p>Poppy&#x27;s five building blocks are that shape, rebuilt for agents. Discovery via a published <code>/.well-known/poppy.json</code>. A session in which the agent declares itself as an agent and says who it represents. Sign-in that happens on the company&#x27;s own page through OAuth, after which the agent may hold a session token granting only the access the customer approved. One token across website, API and the company&#x27;s own agent. And a company-side choice of channel: regular web pages with per-page permission checks, APIs via OpenAPI or MCP, or an agent-to-agent conversation. It is OAuth, JWTs, HTTPS, OpenAPI and MCP — deliberately nothing new.</p>
+<p>Which means the actual question for anyone running a service is not &quot;do I allow AI agents.&quot; It is: <strong>when a non-human client acts for one of my users, can I name it, scope it, revoke it and audit it?</strong> If the answer is no, blocking is the only honest control you have, and JPMorgan is simply being explicit about that.</p>
+<p>The threat model is not hypothetical. A Cloud Security Alliance research note in late September described a campaign in which three open-source AI agents working together breached at least 27 organisations and took more than 600,000 credit card records from two of them, and specifically advised that agentic attack scenarios belong in retail and payment threat models now rather than as a future-facing concern.</p>
+<h2>Map it to infrastructure you already run</h2>
+<table><thead><tr><th>What you already have</th><th>The agent-era version</th><th>What breaks if you skip it</th></tr></thead><tbody><tr><td>Service accounts</td><td>Per-agent identity with an accountable human owner</td><td>Shared logins make attribution impossible after an incident</td></tr><tr><td>OAuth scopes</td><td>Action-level scopes approved by the end user, not the integrator</td><td>&quot;Read my balance&quot; silently becomes &quot;move my money&quot;</td></tr><tr><td>API keys in a vault</td><td>Short-lived tokens bound to the issuing authorization server</td><td>A token for one service gets replayed at another</td></tr><tr><td>Rate limits</td><td>Per-agent quotas and velocity checks separate from human traffic</td><td>One looping agent looks exactly like a DDoS from your own customer</td></tr><tr><td>Circuit breakers</td><td>A kill switch for a class of agent, reachable without the agent</td><td>Revocation that runs through the compromised path is not revocation</td></tr><tr><td>Audit log</td><td>Append-only log outside anything the agent can write to</td><td>An agent with log permissions can edit its own history</td></tr><tr><td>Change approval</td><td>Risk-based human-approval triggers per action, per amount</td><td>Everything is either fully manual or fully autonomous</td></tr></tbody></table>
+<p>Two of those rows come straight from the failures already on record. Zenity Labs&#x27; AgentCorruption work on Amazon Bedrock AgentCore showed an over-broad execution role turning one prompt-injected agent into account-wide access, including memory APIs that could create and delete conversation events — a log the agent could rewrite. And the Model Context Protocol SDK advisories published in late September and early October are a lesson in token audience: credentials that were never bound to the authorization server they belonged to, where upgrading the library alone changes nothing until you pass the expected issuer and clear the unbound state already on disk.</p>
+<h2>The design review I would actually run</h2>
+<p>Questions, in the order they tend to fail:</p>
+<ul><li>Can we distinguish an agent from the user it represents, at the edge, on every request — or only in hindsight from a user-agent string?</li><li>Is the credential the agent holds <em>ours to revoke</em>, and does revoking it leave the human&#x27;s own access intact?</li><li>Is the token bound to an audience, so a token minted for one of our services is rejected by another?</li><li>Which actions require a human in the loop, expressed as a rule (amount, counterparty, irreversibility) rather than as a vibe?</li><li>Where does the approval evidence live, and would it survive the agent&#x27;s own infrastructure being compromised?</li><li>What is the blast radius of the agent&#x27;s role if the model is fully adversarial? Not &quot;if prompt injection happens&quot; — assume it has.</li><li>Does our rate limiting treat a 24/7 client as normal, or will the first well-behaved agent integration page someone at 03:00?</li><li>Who is the named owner, and is that recorded somewhere an auditor can read without asking the operator?</li></ul>
+<h2>What I would not conclude</h2>
+<p>That agents are being shut out of finance. Plaid has been powering Muse&#x27;s finance features since 8 September across a network of more than 12,000 institutions, Scalable Capital opened its platform to model-driven portfolio work in August with per-trade approval, and the banks on the Poppy design-partner list are not there to kill the protocol.</p>
+<p>The honest summary is narrower, and more useful. The credential-replay path for agents is closing. The delegated, scoped, attributable path is being standardised in public, by a draft that is a month old and will change. If you are building anything that acts on a user&#x27;s account, build against the second path now, because the first one is being actively detected and blocked by institutions large enough to set the default.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://fortune.com/2026/10/15/jamie-dimon-ai-agents-meta-muse-jpmorgan/">Fortune, &quot;&#x27;You don&#x27;t want rogue agents&#x27;: Jamie Dimon bars outside AI agents like Meta&#x27;s Muse from JPMorgan accounts&quot;, 15 October 2026</a></li><li><a href="https://sierra.ai/blog/poppy">Sierra, &quot;Sharing a draft of Personal Agent Protocol&quot;, October 2026</a></li><li><a href="https://personalagentprotocol.org/">Personal Agent Protocol draft specification</a></li><li><a href="https://www.fsb.org/2026/10/fsb-finalises-sound-practices-for-the-responsible-adoption-of-artificial-intelligence-ai/">Financial Stability Board, &quot;FSB finalises sound practices for the responsible adoption of artificial intelligence (AI)&quot;, 15 October 2026</a></li><li><a href="https://www.reuters.com/legal/government/global-financial-watchdog-calls-more-human-oversight-agentic-ai-2026-10-15">Reuters (Phoebe Seers), &quot;Global financial watchdog calls for more human oversight of agentic AI&quot;, 15 October 2026</a></li><li><a href="https://plaid.com/blog/meta-muse/">Plaid, &quot;Plaid powers Meta&#x27;s new AI agent, Muse&quot;, 8 September 2026</a></li><li><a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-ai-agent-skimming-campaign-20260926-csa-st/">Cloud Security Alliance, &quot;Research Note: AI agent skimming campaign&quot;, 26 September 2026</a></li><li><a href="https://www.scworld.com/brief/amazon-bedrock-agent-vulnerability-allowed-credential-theft-and-code-access">SC Media, &quot;Amazon Bedrock agent vulnerability allowed credential theft and code access&quot;, 11 October 2026</a></li><li><a href="https://www.sec.gov/Archives/edgar/data/19617/000162828026065582/a3q26erfexhibit991narrative.htm">JPMorgan Chase Q3 2026 earnings release, filed with the SEC</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-16/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: The bank did not block your agent. It blocked your password."><img src="/media/2026-10-16/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: The bank did not block your agent. It blocked your password."><img src="/media/2026-10-16/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: The bank did not block your agent. It blocked your password."><img src="/media/2026-10-16/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: The bank did not block your agent. It blocked your password."><img src="/media/2026-10-16/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: The bank did not block your agent. It blocked your password."><img src="/media/2026-10-16/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: The bank did not block your agent. It blocked your password."></div></div>
+<p class="tags">#aiautomation #aiagents #automation #fintech #payments #identity #buildinpublic #softwareengineering #devops #reliability #devtools #startups</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
