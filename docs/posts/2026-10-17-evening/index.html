@@ -1,0 +1,160 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>Your quota said 0 of 100, and you were still blocked — vishalghule.in</title>
+<meta name="description" content="Most APIs enforce two limits that count different things. Agents trip the one you cannot see, because verifying your own work costs reads, and reads are free on the meter you are watching.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-17-evening/">
+<meta property="og:title" content="Your quota said 0 of 100, and you were still blocked — vishalghule.in">
+<meta property="og:description" content="Most APIs enforce two limits that count different things. Agents trip the one you cannot see, because verifying your own work costs reads, and reads are free on the meter you are watching.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-17-evening/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AI PLAYBOOK / 17 OCT 2026</span>
+<h1>Your quota said 0 of 100, and you were still blocked</h1>
+<p class="lede">Most APIs enforce two limits that count different things. Agents trip the one you cannot see, because verifying your own work costs reads, and reads are free on the meter you are watching.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-17</span><span>·</span><span>3 min read</span><span>·</span><a href="https://www.instagram.com/p/DenwCRaAfy6/">on Instagram</a></div>
+<article><p>At 14:38 today an automated pipeline of mine tried to publish a carousel to Instagram and got this back:</p>
+<p>``<code> POST /me/media_publish 403  code 4 / 2207051 &quot;Application request limit reached&quot; </code>``</p>
+<p>Reasonable enough — presumably I had used up the day&#x27;s posting allowance. So I checked:</p>
+<p>``<code> GET /me/content_publishing_limit quota_total 100   quota_usage 0 </code>``</p>
+<p>Zero of a hundred posts used, and simultaneously blocked for exceeding a limit.</p>
+<p>Both of those responses are correct. They are reporting on two different meters.</p>
+<h2>Quota and rate limit are not the same thing</h2>
+<p><strong>A quota counts outcomes.</strong> Posts published, emails delivered, rows written, messages sent. It is the number a product manager cares about, it maps to your plan tier, and it is almost always the one exposed on a usage endpoint or a dashboard page.</p>
+<p><strong>A rate limit counts calls.</strong> Every HTTP request against the platform, regardless of what it did or whether it changed anything. Reads count. Failed calls count. Retries count.</p>
+<p>Meta documents these as separate systems — Platform Rate Limits sit at the application level, while Business Use Case limits and content-publishing quotas are tracked per asset. One does not decrement the other.</p>
+<p>Most APIs with any maturity work this way. You are usually watching the wrong one.</p>
+<h2>Why this hits agents harder</h2>
+<p>A conventional application has a roughly predictable read-to-write ratio. An agent does not, because a well-built agent verifies its own work.</p>
+<p>It publishes, then reads back to confirm the publish landed. It polls a container until processing finishes. It lists recent items to check for duplicates before acting. It takes a metrics snapshot afterwards. Each of those is a call. None of them is an outcome.</p>
+<p>In the pipeline that got blocked today, one published post costs somewhere north of fifteen API calls and exactly one unit of quota. The ratio is roughly fifteen to one against the meter I could not see.</p>
+<p>And the painful part: that verification traffic is <em>correct</em>. I have written at length that an agent reporting &quot;done&quot; without reading back from the system of record is making an unverifiable claim. That remains true. It is also precisely what exhausts the rate limit.</p>
+<p>Two good practices, in direct tension. Nobody tells you that up front.</p>
+<h2>Four fixes</h2>
+<p><strong>Read the usage headers, not the quota endpoint.</strong> Most platforms return live consumption on every response — Meta uses <code>X-App-Usage</code> and its business-use-case equivalents. That header is the meter that stops you. The quota endpoint is the one that reassures you while you are being throttled.</p>
+<p><strong>Batch verification.</strong> One list call that returns twenty items beats twenty individual reads. Verify a batch after a run rather than each item during it. This is the single biggest reduction available and it changes nothing about how rigorous the verification is.</p>
+<p><strong>Exponential backoff with a cap.</strong> A retry against a tripped limit does not reset the window; on several platforms it extends it. I retried twice today before stopping, which made the wait longer than if I had simply waited.</p>
+<p><strong>Treat throttling as expected load, not an error.</strong> If a 429 or a 403 only ever reaches a catch block at the top of your run, the agent will treat a routine condition as a crash and discard work in progress. Throttling should be handled where the call is made, with a queue and a delay, not where the stack unwinds.</p>
+<h2>The uncomfortable bit</h2>
+<p>The reason this went unnoticed in my own system is that I had been adding verification steps all week — each one individually justified, each one making the agent more honest about what it had actually done.</p>
+<p>Nobody adds a read and thinks about the budget, because reads feel free. On the meter you are watching, they are.</p></article>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-17-evening/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: Your quota said 0 of 100, and you were still blocked"><img src="/media/2026-10-17-evening/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: Your quota said 0 of 100, and you were still blocked"><img src="/media/2026-10-17-evening/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: Your quota said 0 of 100, and you were still blocked"><img src="/media/2026-10-17-evening/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: Your quota said 0 of 100, and you were still blocked"><img src="/media/2026-10-17-evening/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: Your quota said 0 of 100, and you were still blocked"><img src="/media/2026-10-17-evening/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: Your quota said 0 of 100, and you were still blocked"></div></div>
+<p class="tags">#aiagents #aiautomation #apidesign #sre #devops #platformengineering #softwareengineering #backend #ratelimiting #buildinpublic #devtools #programming</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>

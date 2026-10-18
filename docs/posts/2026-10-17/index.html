@@ -1,0 +1,160 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>Guardrails are not prompts, and humans are not a guardrail — vishalghule.in</title>
+<meta name="description" content="If a better prompt could get past it, it was never a control. A practical split between the things an agent cannot do, the things a human must approve, and how to decide which is which without drowning in approvals.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-17/">
+<meta property="og:title" content="Guardrails are not prompts, and humans are not a guardrail — vishalghule.in">
+<meta property="og:description" content="If a better prompt could get past it, it was never a control. A practical split between the things an agent cannot do, the things a human must approve, and how to decide which is which without drowning in approvals.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-17/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+@media(max-width:520px){h1{font-size:31px;letter-spacing:-0.8px}.wrap{padding-top:28px}}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AGENT PATTERNS / 17 OCT 2026</span>
+<h1>Guardrails are not prompts, and humans are not a guardrail</h1>
+<p class="lede">If a better prompt could get past it, it was never a control. A practical split between the things an agent cannot do, the things a human must approve, and how to decide which is which without drowning in approvals.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-17</span><span>·</span><span>3 min read</span><span>·</span><a href="https://www.instagram.com/p/DelwCDJGKaD/">on Instagram</a></div>
+<article><p>The first thing most engineers do when they give an agent real access is write a rule into the system prompt. <em>Don&#x27;t touch production. Don&#x27;t delete anything. Ask before spending money.</em></p>
+<p>Then they treat that sentence as a safety boundary.</p>
+<p>It isn&#x27;t one. It&#x27;s a request, and the test is simple: <strong>if a better prompt could get past it, it was never a control.</strong> Anything you ask the model to do, the model can fail to do — through a bad plan, an ambiguous tool result, or a chain of individually reasonable steps that arrives somewhere unreasonable.</p>
+<h2>Two different tools</h2>
+<p><strong>A guardrail means the agent cannot.</strong> It is enforced outside the model, by something the model cannot talk to:</p>
+<ul><li>A credential scoped so production is not reachable</li><li>A dry-run default where publishing needs an explicit <code>--live</code> flag</li><li>A spend cap that trips at a number</li><li>An allowlist of permitted actions</li></ul>
+<p>The agent can plan whatever it likes. The boundary does not care.</p>
+<p><strong>Human-in-the-loop means the agent waits.</strong> A person looks and decides. It is far more flexible than a guardrail — a human can catch a bad idea that is technically permitted — and far more expensive, because it spends attention, and attention does not scale.</p>
+<p>These are not interchangeable, and the common failure is reaching for the second when the first would do.</p>
+<h2>Approval fatigue is a real failure mode</h2>
+<p>Put a human on everything and you get a reviewer who approves forty things a day. By the fortieth they are clicking, not reading. The forty-first — the one that matters — gets the same click.</p>
+<p>That is worse than having no review at all, because now there is a rubber stamp with a person&#x27;s name on it, and everyone downstream believes the thing was checked.</p>
+<p>Anyone who has run a change-approval process has watched this happen. The number of gates is not the same as the amount of safety, and past a certain density, adding gates reduces it.</p>
+<h2>Gate on blast radius</h2>
+<p>The useful question is not &quot;is this task complex?&quot; or &quot;is this risky-sounding?&quot; It is <strong>what happens if this is wrong, and can I take it back?</strong></p>
+<table><thead><tr><th>Action</th><th>Control</th></tr></thead><tbody><tr><td>Reversible, cheap</td><td>Let it run. Log it.</td></tr><tr><td>Reversible, costly</td><td>Let it run. Alert after.</td></tr><tr><td>Irreversible</td><td>Named human approves, every time.</td></tr></tbody></table>
+<p>Irreversible is a shorter list than people expect, and a more obvious one: deletes, payments, anything that sends to another human, anything that becomes public. Those get a person. Everything else gets a guardrail and a log.</p>
+<p>A worked example from this pipeline: publishing to Instagram is irreversible — the API has no delete endpoint, so a bad post cannot be withdrawn programmatically. It requires explicit approval and an explicit <code>--live</code> flag, and the default is a dry run that prints what <em>would</em> happen. Rendering slides is reversible and free, so it runs unattended with no gate at all. Same system, two different controls, chosen by consequence rather than by how clever the step is.</p>
+<h2>Five controls that actually hold</h2>
+<p>None of these live inside the prompt.</p>
+<ul><li><strong>Scoped credentials.</strong> The agent cannot reach what it must not touch. This is the highest-leverage control and the one most often skipped, because handing over your own full-access key is easier.</li><li><strong>Dry-run by default.</strong> The destructive path requires an explicit flag. Make the safe thing the default and the dangerous thing deliberate.</li><li><strong>Spend and rate caps as circuit breakers.</strong> Not warnings — breakers. A warning is a log line nobody reads at 2am.</li><li><strong>Allowlist the actions, don&#x27;t blocklist the bad ones.</strong> You cannot enumerate every bad action. You can enumerate the good ones.</li><li><strong>One named human per irreversible action.</strong> Named, not &quot;the team&quot;. Shared ownership of an approval is nobody&#x27;s ownership.</li></ul>
+<h2>The part that transfers from infrastructure</h2>
+<p>None of this is new. It is least privilege, staged rollout, blast-radius thinking and change control — the same practices that keep distributed systems alive, pointed at a non-deterministic component.</p>
+<p>What is new is that the component argues back. A microservice does not attempt to reason its way around an IAM policy. An agent will cheerfully construct a plan that routes around your intent while satisfying every instruction you wrote.</p>
+<p>Which is exactly why the control cannot be an instruction.</p></article>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-17/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: Guardrails are not prompts, and humans are not a guardrail"><img src="/media/2026-10-17/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: Guardrails are not prompts, and humans are not a guardrail"><img src="/media/2026-10-17/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: Guardrails are not prompts, and humans are not a guardrail"><img src="/media/2026-10-17/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: Guardrails are not prompts, and humans are not a guardrail"><img src="/media/2026-10-17/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: Guardrails are not prompts, and humans are not a guardrail"><img src="/media/2026-10-17/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: Guardrails are not prompts, and humans are not a guardrail"></div></div>
+<p class="tags">#aiagents #aiautomation #sre #devops #cloudengineering #platformengineering #softwareengineering #reliability #buildinpublic #devtools #programming #techtok</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
