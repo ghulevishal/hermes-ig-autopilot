@@ -1,0 +1,186 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>Prompt caching: the TTL starts when you send — vishalghule.in</title>
+<meta name="description" content="A 4-minute stream leaves about one minute on Anthropic&#x27;s 5-minute cache. Structure the prefix so hits are the default, pick TTL from traffic shape, and treat a zero in the usage fields as a miss — not as &quot;caching is on&quot;.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-10-25-evening/">
+<meta property="og:title" content="Prompt caching: the TTL starts when you send — vishalghule.in">
+<meta property="og:description" content="A 4-minute stream leaves about one minute on Anthropic&#x27;s 5-minute cache. Structure the prefix so hits are the default, pick TTL from traffic shape, and treat a zero in the usage fields as a miss — not as &quot;caching is on&quot;.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-10-25-evening/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;width:100%;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+
+/* homepage profile: person first, posts after the hairline */
+.profile{margin:0 0 56px;padding-bottom:52px;border-bottom:1px solid var(--border)}
+.profile h2{margin:36px 0 14px}
+.who{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:2px 0 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.scale{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-2);margin:0 0 8px}
+.roles{list-style:none;padding:0;margin:0 0 8px;min-width:0}
+.roles li{position:relative;padding:13px 0 13px 0;margin:0;
+  border-bottom:1px solid var(--border);display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:2px 18px}
+.roles li::before{display:none}
+.roles li:last-child{border-bottom:0}
+.roles strong{color:var(--fg);font-weight:600;grid-column:1}
+.roles em{color:var(--fg-3);font-style:normal;font-size:14.5px;grid-column:1}
+.roles time{font-family:var(--font-mono);font-size:12px;color:var(--fg-3);
+  grid-column:2;grid-row:1 / span 2;align-self:center;white-space:nowrap}
+.edu{color:var(--fg-3);font-size:14.5px;margin:18px 0 0}
+h2.log{margin:0 0 12px}
+@media(max-width:520px){
+  h1{font-size:31px;letter-spacing:-0.8px}
+  .wrap{padding-top:28px;overflow-wrap:anywhere}
+  .roles li{grid-template-columns:1fr;gap:2px}
+  .roles time{grid-column:1;grid-row:auto;white-space:normal;margin-top:2px}
+}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AI PLAYBOOK / 25 OCT 2026</span>
+<h1>Prompt caching: the TTL starts when you send</h1>
+<p class="lede">A 4-minute stream leaves about one minute on Anthropic&#x27;s 5-minute cache. Structure the prefix so hits are the default, pick TTL from traffic shape, and treat a zero in the usage fields as a miss — not as &quot;caching is on&quot;.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-10-25</span><span>·</span><span>6 min read</span><span>·</span><a href="https://www.instagram.com/p/De61WMyieep/">on Instagram</a></div>
+<article><p>Most agent stacks pay full input price for tokens the model has already processed. The tools array, the system prompt, the policy document, the few-shot examples — they are identical on turn 12 and turn 1. Prompt caching is the vendor feature that stops you being billed as if they were new. The part that actually fails in production is not &quot;did we turn it on&quot;. It is that the clock starts when the request leaves, the prefix has to match byte-for-byte, and a miss is silent.</p>
+<p>This is a technique post, not a model roundup. The numbers below are vendor-published as of 25 October 2026. They will move. The layout of the prompt will not.</p>
+<h2>What a cache hit actually is</h2>
+<p>When a model reads a prompt it builds key-value states for the tokens it has seen so far. Prompt caching stores those states for a <em>prefix</em> — the unchanged tokens at the front of the request — and reuses them on a later request that starts the same way. The model still processes the new tail and still generates a new answer. Identical requests are not guaranteed to produce identical outputs. OpenAI states this in its FAQ; treat it as a cost and latency optimisation, not as a reproducibility feature.</p>
+<p>Anthropic caches the full prefix in a fixed order: <code>tools</code>, then <code>system</code>, then <code>messages</code>, up to and including the block marked with <code>cache_control</code>. You can use automatic caching (one top-level <code>cache_control</code>) or up to four explicit breakpoints. OpenAI caches the rendered context — developer messages, tool definitions, conversation history — and, on GPT-5.6 and later, lets you place explicit breakpoints as well. Implicit caching remains the default.</p>
+<p>The match is exact. Change the tool description, reorder the tools array, swap the model, or edit one character in the system prompt, and everything after that change misses. Anthropic&#x27;s platform article is blunt: cache reads must be byte-exact across the full span, on the same model.</p>
+<h2>The number that is not the headline</h2>
+<p>On Claude Opus 5.5, base input is $4 per million tokens. A 5-minute cache write is $5. A cache hit is $0.20 — 0.05x, not the 0.1x that still applies to most other Claude models. Sonnet 5.5 is the same multiplier on a $2 base: write $2.50, hit $0.10. Anthropic&#x27;s docs footnote this. Collapsing &quot;Claude cache hits are 90% off&quot; into one number is how you mis-price Opus 5.5 by a factor of two.</p>
+<p>The 5-minute write is 1.25x base input. The 1-hour write is 2x. Cache breakpoints themselves are free. Break-even on the 5-minute TTL is the second request that reuses the prefix. If the prefix is used even once inside the TTL, you are ahead of sending it uncached twice.</p>
+<p>OpenAI&#x27;s current guide says cached input is discounted by up to 95%. On GPT-5.6 and later, cache writes cost 1.25x the uncached input rate; subsequent reads cost 0.1x on most of those models and 0.05x on GPT-6.1 Sol. The default lifetime is 30 minutes after the most recent write or reuse (<code>prompt_cache_options.ttl</code> only accepts <code>30m</code>). OpenAI also states that cached tokens still count toward tokens-per-minute rate limits. Do not assume a cache hit is free quota.</p>
+<p>I did not independently measure any of these multipliers. They are what the vendor pages said on 25 October 2026.</p>
+<h2>The trap: the clock starts at send</h2>
+<p>Anthropic&#x27;s prompt-caching docs:</p>
+<blockquote>The lifetime is measured from the start of the request that writes or reads the cache entry, not from the end of its response. Time spent generating a response counts against the lifetime: if a response takes 4 minutes to stream, a follow-up request that reuses the same cached prefix must start within about 1 minute of that response completing.</blockquote>
+<p>That is the hook. A long generation does not wait for the TTL to start. It consumes it.</p>
+<p>The same page, and Anthropic&#x27;s &quot;Reducing cost and improving performance&quot; article, describe the agent-shaped version of this. If a parent request blocks on a tool call or a sub-agent for longer than the TTL, the prefix expires before the result comes back. The next turn rewrites the cache at 1.25x (or 2x for the 1-hour TTL) instead of reading it cheaply. The fix is not &quot;retry harder&quot;. It is to set <code>{&quot;type&quot;: &quot;ephemeral&quot;, &quot;ttl&quot;: &quot;1h&quot;}</code> on the stable prefix when the work between turns can exceed five minutes, or to keep the parent cache warm with a request that actually reuses it.</p>
+<p>A 5-minute TTL that is hit refreshes for no extra charge. Use it when traffic is denser than five minutes. Use the 1-hour TTL when it is not. Mixing both in one request is allowed, with the constraint that longer-TTL blocks must appear before shorter-TTL ones.</p>
+<h2>Minimum length fails closed, and silently</h2>
+<p>Shorter than the model&#x27;s minimum cacheable length means the prefix is not cached. Anthropic does not error. Both <code>cache_creation_input_tokens</code> and <code>cache_read_input_tokens</code> stay 0. On the Claude API the current minimums include 512 tokens for Opus 5.5, Sonnet 5.5 and Haiku 5.5, 1,024 for several 4.x/5.0 lines, and 4,096 for Opus 4.6/4.5 and Haiku 4.5. OpenAI&#x27;s minimum is 1,024 tokens for GPT-5.6 and later; hidden system tokens do not count toward it.</p>
+<p>If you are &quot;using caching&quot; and both fields are zero, you are not using caching. You are sending a prompt that did not qualify.</p>
+<p>OpenAI shipped Prompt Cache Diagnostics for GPT-5.6 and later in the Responses API (docs dated 24 October 2026). You pass <code>prompt_cache_options.comparison_response_id</code> against a baseline response and read <code>prompt_cache_diagnostics</code> for a miss reason. Use it when hit rate drops and you cannot see why. Anthropic exposes <code>cache_creation_input_tokens</code>, <code>cache_read_input_tokens</code> and <code>input_tokens</code> (tokens <em>after</em> the last breakpoint) on every response. Total input is the sum of the three. Console diagnostics exist for the same reason.</p>
+<h2>What to do on Monday</h2>
+<p>1. Put the stable material first, in the order the provider hashes: tools, then system, then reference docs. Put the new user turn last. Do not timestamp the prefix. Do not inject a request id into the system prompt. 2. Keep the prefix byte-exact and on one model. A &quot;router&quot; that silently swaps Sonnet for Haiku between turns is a cache miss generator. 3. Pick TTL from the gap between turns, not from a default. Dense chat: 5-minute, it refreshes free. Agent with tools that can run past five minutes: 1-hour on the stable prefix. 4. Read the usage fields on every response and alert when <code>cache_read_*</code> (or <code>cached_tokens</code>) is zero on a request you expected to hit. A miss is an incident, not a curiosity. 5. Do not pad junk to hit the minimum. If you expand a prefix to qualify, expand it with instructions or examples that change behaviour in a way you have evaluated. 6. Remember what caching does not do. It does not make outputs identical. It does not skip output tokens. On OpenAI it does not reduce TPM consumption.</p>
+<p>Where this does not apply: one-shot prompts with no shared prefix, traffic so sparse that even a 1-hour TTL never hits, and prefixes under the minimum that you cannot honestly enlarge. In those cases you are buying a write premium for no read. Leave it off and spend the attention on routing, which is a different lever.</p>
+<p>The saveable version is the same list without the prose. Stable first. Variable last. Same model. TTL from the gap. Measure the hit. If the field is zero, you paid full price.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic, &quot;Prompt caching&quot;, Claude Docs, fetched 25 Oct 2026</a></li><li><a href="https://claude.com/resources/articles/reducing-cost-and-improving-performance-with-claude-platform">Anthropic, &quot;Reducing cost and improving performance with Claude Platform&quot;, 8 Sep 2026</a></li><li><a href="https://developers.openai.com/api/docs/guides/prompt-caching">OpenAI, &quot;Prompt caching&quot;, API docs, fetched 25 Oct 2026</a></li><li><a href="https://developers.openai.com/api/docs/guides/prompt-caching/diagnostics">OpenAI, &quot;Prompt cache diagnostics&quot;, API docs, dated 24 Oct 2026</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-10-25-evening/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: Prompt caching: the TTL starts when you send"><img src="/media/2026-10-25-evening/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: Prompt caching: the TTL starts when you send"><img src="/media/2026-10-25-evening/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: Prompt caching: the TTL starts when you send"><img src="/media/2026-10-25-evening/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: Prompt caching: the TTL starts when you send"><img src="/media/2026-10-25-evening/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: Prompt caching: the TTL starts when you send"><img src="/media/2026-10-25-evening/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: Prompt caching: the TTL starts when you send"></div></div>
+<p class="tags">#aiautomation #aiagents #llm #claude #openai #softwareengineering #devtools #sre #productivity #buildinpublic #aitools #programming</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
