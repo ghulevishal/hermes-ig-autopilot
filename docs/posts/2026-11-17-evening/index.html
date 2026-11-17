@@ -1,0 +1,182 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>Your retries are the outage — vishalghule.in</title>
+<meta name="description" content="Retries don&#x27;t add across a call path - they multiply, and they switch on at the exact moment a dependency is already failing. Here is the budget that stops a retry storm.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-11-17-evening/">
+<meta property="og:title" content="Your retries are the outage — vishalghule.in">
+<meta property="og:description" content="Retries don&#x27;t add across a call path - they multiply, and they switch on at the exact moment a dependency is already failing. Here is the budget that stops a retry storm.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-11-17-evening/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;width:100%;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+
+/* homepage profile: person first, posts after the hairline */
+.profile{margin:0 0 56px;padding-bottom:52px;border-bottom:1px solid var(--border)}
+.profile h2{margin:36px 0 14px}
+.who{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:2px 0 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.scale{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-2);margin:0 0 8px}
+.roles{list-style:none;padding:0;margin:0 0 8px;min-width:0}
+.roles li{position:relative;padding:13px 0 13px 0;margin:0;
+  border-bottom:1px solid var(--border);display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:2px 18px}
+.roles li::before{display:none}
+.roles li:last-child{border-bottom:0}
+.roles strong{color:var(--fg);font-weight:600;grid-column:1}
+.roles em{color:var(--fg-3);font-style:normal;font-size:14.5px;grid-column:1}
+.roles time{font-family:var(--font-mono);font-size:12px;color:var(--fg-3);
+  grid-column:2;grid-row:1 / span 2;align-self:center;white-space:nowrap}
+.edu{color:var(--fg-3);font-size:14.5px;margin:18px 0 0}
+h2.log{margin:0 0 12px}
+@media(max-width:520px){
+  h1{font-size:31px;letter-spacing:-0.8px}
+  .wrap{padding-top:28px;overflow-wrap:anywhere}
+  .roles li{grid-template-columns:1fr;gap:2px}
+  .roles time{grid-column:1;grid-row:auto;white-space:normal;margin-top:2px}
+}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">RETRY BUDGETS / 17 NOV 2026</span>
+<h1>Your retries are the outage</h1>
+<p class="lede">Retries don&#x27;t add across a call path - they multiply, and they switch on at the exact moment a dependency is already failing. Here is the budget that stops a retry storm.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-11-17</span><span>·</span><span>5 min read</span><span>·</span><a href="https://www.instagram.com/p/Df2G7zBGGk8/">on Instagram</a></div>
+<article><h2>The failure mode nobody configured on purpose</h2>
+<p>Almost every service you run retries failed calls. Most of the time you never chose that behaviour: it lives inside an HTTP client, a service mesh, an SDK default, or a framework you adopted for other reasons. A 2026 systematic study of 200 open-source Python microservice projects found explicit retry logic in only 11.5% of them, and the authors&#x27; own audit put the true figure nearer 41% once framework defaults were counted. The retries are there. They are just not written down anywhere a reviewer would see.</p>
+<p>That invisibility is the problem, because retries are not a local setting. Their danger is a system-level property that only appears when several layers interact under failure.</p>
+<h2>Retries multiply, they don&#x27;t add</h2>
+<p>Number the layers in a request path from the user down to the dependency that fails. If each layer retries up to three times, a single failed call at the bottom can generate <code>(1 + retries)</code> attempts at every level, and those multiply:</p>
+<table><thead><tr><th>Path</th><th>Max attempts at the bottom</th></tr></thead><tbody><tr><td>2 tiers, 3 retries each</td><td>4 x 4 = 16</td></tr><tr><td>3 tiers, 3 retries each</td><td>4 x 4 x 4 = 64</td></tr><tr><td>4 tiers, 3 retries each</td><td>up to 81</td></tr></tbody></table>
+<p>A gateway with 2 retries, a service with 3, and a database client with 3 produces <code>3 x 4 x 4 = 48</code>. At 1,000 requests per second, a hard-down dependency receives up to 48,000 attempts per second - while users still get errors. The mechanism has a name in the recent literature: the <strong>retry amplification factor</strong>.</p>
+<p>The cruel part is the timing. Under normal conditions the retry logic is invisible - almost nothing fails, so almost nothing retries, and the expected amplification under independent, random failures is only about 2x. The multiplier only switches fully on when the dependency is already saturated, because then every attempt fails and every layer&#x27;s retries fire on every request. The mechanism that was supposed to add resilience becomes the load that guarantees the outage.</p>
+<h2>The counter-intuitive measurement</h2>
+<p>It is tempting to assume that retries can only help: worst case, they are wasted work. The data says otherwise. In the same 2026 study&#x27;s simulation (n = 100 trials per strategy), under <strong>correlated</strong> failure a naive standard retry policy reduced request success from <strong>55.4%</strong> (performing no retries at all) to <strong>41.5%</strong>. Adding retries made the system fail more often, precisely when resilience was needed.</p>
+<p>Three effects drive the inversion. Queue slots are the scarce resource, and a retry competes with fresh traffic rather than deferring to it, so both are rejected more often. Each attempt consumes processing time before it fails, so latency climbs until callers abandon requests that might otherwise have completed. And at high failure rates, most retries could never have succeeded anyway, so the capacity they burned produced nothing.</p>
+<p>Note the scope honestly: this is a simulation under correlated failure, not a production measurement, and the paper is a preprint. The worst-case <code>81x</code> is also a bound, not a forecast - finite queues shed load and truncate it long before it gets there. But the direction of the effect is the point, and it matches what outage post-mortems have shown for years.</p>
+<h2>Where agent systems make it worse</h2>
+<p>If you build on LLM providers, you already live inside a deep, fan-out call path - and you probably have more retry layers than you think. The model SDK retries on a 429. The gateway or proxy in front of it retries. Your agent framework retries a failed tool call. Your own orchestration loop retries the step. When the provider rate-limits you, all of those fire on the same signal at once, and the aggregate request rate you send into an already-throttled endpoint goes up, not down. The cooldown you were trying to escape gets longer because you kept knocking.</p>
+<p>This is the same shape as a classic retry storm, with the model provider as the saturated dependency. The fix is the same too.</p>
+<h2>The retry budget: design it as a system</h2>
+<p>None of the countermeasures require a rewrite. They require deciding retry behaviour once, across the whole path, instead of per call site.</p>
+<ul><li><strong>Retry budget.</strong> Cap retries as a fraction of total requests - a common target is no more than 10% of traffic may be retries. The Google SRE book gives a concrete illustrative example: allow only ~60 retries per minute in a process, and once the budget is spent, fail fast instead of retrying. The effect is that retries collapse toward zero exactly when failure is widespread, which is exactly when you want them to.</li><li><strong>Retry at one layer only.</strong> Pick the layer nearest the failing dependency and let it own retries; every layer above fails fast. This converts the multiplicative product back into a single <code>1 + r</code>. Check your HTTP client, SDK, mesh and gateway first - one of them is probably already retrying.</li><li><strong>Cap attempts per request.</strong> Three total attempts is a sane default. Never retry a given request indefinitely.</li><li><strong>Exponential backoff with jitter.</strong> Backoff spreads the spike over time; jitter breaks the synchronized wave that forms when independent clients back off in lockstep. In that 2026 survey, exactly one of 113 production configurations randomized its delay - almost nobody adds jitter, and without it a network blip becomes a periodic surge. Backoff changes <em>when</em> retries happen, not <em>how many</em>; it is not a substitute for a budget.</li><li><strong>Deadline propagation.</strong> Pass one shared deadline down the whole call path so upstream tiers stop retrying the moment the overall budget is spent, instead of each tier retrying against its own private clock. The clock does not restart when you retry.</li><li><strong>Honor overload signals.</strong> A <code>429</code> or <code>503</code> with <code>Retry-After</code> is the dependency telling you to stop. Respect it, propagate &quot;overloaded, do not retry&quot; up the stack, and reach for a <strong>circuit breaker</strong> - which turns a slow failure into a fast one and gives the dependency room to recover - rather than retrying into the wall.</li></ul>
+<h2>Where this does not apply</h2>
+<p>Retries are not the enemy; unbudgeted, layered, correlated retries are. For transient, independent faults - a dropped packet, a brief leader election - a single bounded retry with jitter is the right tool and genuinely raises success. The guidance also assumes idempotency: retry reads, lookups and idempotent writes freely, but a retried non-idempotent write or payment is a duplicate side effect, which is a different and worse failure than an error.</p>
+<p>The one action that pays for itself: map the retry counts across a full critical path, multiply them, and ask whether the slowest service in the chain can survive that multiple of its normal request rate. If the answer is no - and it usually is - you are not looking at a safety net. You are looking at a latent retry storm waiting for its trigger.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://sre.google/sre-book/addressing-cascading-failures">Google, &quot;Addressing Cascading Failures&quot;, Site Reliability Engineering (Chapter 22)</a></li><li><a href="https://arxiv.org/abs/2608.25403">&quot;Retry Amplification in Distributed Systems: A Systematic Analysis of Retry Policies and Their Role in Cascading Failures&quot;, arXiv:2608.25403, 2026</a></li><li><a href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/">Marc Brooker, &quot;Exponential Backoff And Jitter&quot;, AWS Architecture Blog, 2015</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-11-17-evening/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: Your retries are the outage"><img src="/media/2026-11-17-evening/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: Your retries are the outage"><img src="/media/2026-11-17-evening/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: Your retries are the outage"><img src="/media/2026-11-17-evening/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: Your retries are the outage"><img src="/media/2026-11-17-evening/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: Your retries are the outage"><img src="/media/2026-11-17-evening/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: Your retries are the outage"></div></div>
+<p class="tags">#aiautomation #aiagents #llm #sre #devops #softwareengineering #distributedsystems #reliability #platformengineering #buildinpublic #devtools #programming</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>
