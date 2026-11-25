@@ -1,0 +1,199 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<script>if(location.protocol==='http:')location.replace(location.href.replace(/^http:/,'https:'));</script>
+<title>The retry that charged the customer twice — vishalghule.in</title>
+<meta name="description" content="A timeout tells you nothing about whether your side effect ran — and in an agent that retries on its own, that ambiguity turns one charge into two. The fix is one idempotency key per action, not per attempt.">
+<link rel="canonical" href="https://vishalghule.in/posts/2026-11-25-evening/">
+<meta property="og:title" content="The retry that charged the customer twice — vishalghule.in">
+<meta property="og:description" content="A timeout tells you nothing about whether your side effect ran — and in an agent that retries on its own, that ambiguity turns one charge into two. The fix is one idempotency key per action, not per attempt.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://vishalghule.in/posts/2026-11-25-evening/">
+<meta name="twitter:card" content="summary_large_image">
+<style>:root{
+  /* Hermes dashboard tokens */
+  --bg:#041c1c;
+  --cream:#ffe6cb;
+  --accent:#34d399;
+  --radius:0.5rem;
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  /* two-shade dark system: canvas, plus one step lighter for contained surfaces */
+  --surface:color-mix(in srgb,var(--cream) 4%,var(--bg));
+  --fg:var(--cream);
+  --fg-2:color-mix(in srgb,var(--cream) 72%,var(--bg));
+  --fg-3:color-mix(in srgb,var(--cream) 52%,var(--bg));
+  --border:color-mix(in srgb,var(--cream) 14%,transparent);
+  --border-strong:color-mix(in srgb,var(--cream) 26%,transparent);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"calt","rlig"}
+.wrap{max-width:680px;width:100%;margin:0 auto;padding:40px 22px 110px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* nav: depth from a hairline, never a shadow */
+header.site{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:56px}
+header.site .brand{font-family:var(--font-mono);font-size:14px;font-weight:500;
+  color:var(--fg);letter-spacing:-0.2px;text-decoration:none}
+header.site .brand:hover{text-decoration:none;color:var(--fg)}
+header.site .brand b{color:var(--accent);font-weight:500}
+header.site nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.site nav a{color:var(--fg-2)}
+header.site nav a:hover{color:var(--accent);text-decoration:none}
+
+/* compressed, authoritative headings */
+h1{font-size:40px;line-height:1.05;letter-spacing:-1.1px;margin:0 0 16px;font-weight:600}
+h2{font-size:23px;line-height:1.2;letter-spacing:-0.5px;margin:52px 0 12px;font-weight:600}
+p{margin:0 0 17px;color:var(--fg-2)}
+.lede{font-size:18px;line-height:1.6;color:var(--fg);margin:0 0 14px}
+strong{color:var(--fg);font-weight:600}
+
+/* wide-tracked uppercase mono overline */
+.over{font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:2.4px;color:var(--fg-3);
+  display:block;margin:0 0 14px}
+.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:0 0 44px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:10.5px;
+  padding:3px 10px;border-radius:9999px;border:1px solid var(--border-strong);
+  color:var(--accent);text-transform:uppercase;letter-spacing:1.6px}
+
+ul{margin:0 0 17px;padding:0;list-style:none}
+li{position:relative;padding-left:20px;margin:0 0 9px;color:var(--fg-2)}
+li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:1px;
+  background:var(--accent)}
+
+/* stat: border weight carries the emphasis */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-left:2px solid var(--accent);border-radius:var(--radius);
+  padding:22px 24px;margin:30px 0}
+.stat .n{font-size:40px;line-height:1;letter-spacing:-1.5px;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:9px}
+.stat p{margin:0;color:var(--fg-2)}
+
+/* index cards */
+.card{display:block;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin:0 0 12px;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+  text-decoration:none}
+.card h3{margin:8px 0 7px;font-size:19px;line-height:1.25;letter-spacing:-0.4px;
+  font-weight:600;color:var(--fg)}
+.card p{margin:0;color:var(--fg-3);font-size:14.5px;line-height:1.55}
+
+/* slides demoted: a record of what shipped, not the article itself */
+.asposted{margin:60px 0 0;padding-top:26px;border-top:1px solid var(--border)}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;margin-top:16px}
+.strip img{width:100%;aspect-ratio:1080/1350;object-fit:cover;display:block;
+  border-radius:4px;border:1px solid var(--border);background:var(--surface);
+  opacity:.72;transition:opacity .15s}
+.strip img:hover{opacity:1}
+
+/* long-form article typography */
+article h2{margin:46px 0 14px}
+article h3{font-size:18px;line-height:1.3;letter-spacing:-0.3px;margin:32px 0 10px;
+  font-weight:600;color:var(--fg)}
+article p{margin:0 0 19px}
+article hr{border:0;border-top:1px solid var(--border);margin:44px 0}
+article code{font-family:var(--font-mono);font-size:13.5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--fg)}
+article blockquote{margin:26px 0;padding:14px 20px;background:var(--surface);
+  border-left:2px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;
+  color:var(--fg-2)}
+article blockquote p{margin:0}
+article table{width:100%;border-collapse:collapse;margin:26px 0;font-size:14.5px}
+article th{text-align:left;font-family:var(--font-mono);font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:1.6px;color:var(--fg-3);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+article td{padding:13px 14px 13px 0;border-bottom:1px solid var(--border);
+  color:var(--fg-2);vertical-align:top;line-height:1.55}
+article tr:last-child td{border-bottom:0}
+article th:last-child,article td:last-child{padding-right:0}
+.sources{margin:52px 0 0;padding-top:24px;border-top:1px solid var(--border)}
+.sources ol{margin:0;padding-left:20px;color:var(--fg-3);font-size:14px;line-height:1.75}
+.sources li{padding-left:4px;margin:0 0 7px}
+.sources li::before{display:none}
+.tags{margin-top:30px;font-family:var(--font-mono);font-size:12px;
+  color:var(--fg-3);word-spacing:.3em;line-height:1.9}
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--border);
+  color:var(--fg-3);font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap}
+
+/* homepage profile: person first, posts after the hairline */
+.profile{margin:0 0 56px;padding-bottom:52px;border-bottom:1px solid var(--border)}
+.profile h2{margin:36px 0 14px}
+.who{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-3);
+  margin:2px 0 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.scale{font-family:var(--font-mono);font-size:12.5px;color:var(--fg-2);margin:0 0 8px}
+.roles{list-style:none;padding:0;margin:0 0 8px;min-width:0}
+.roles li{position:relative;padding:13px 0 13px 0;margin:0;
+  border-bottom:1px solid var(--border);display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:2px 18px}
+.roles li::before{display:none}
+.roles li:last-child{border-bottom:0}
+.roles strong{color:var(--fg);font-weight:600;grid-column:1}
+.roles em{color:var(--fg-3);font-style:normal;font-size:14.5px;grid-column:1}
+.roles time{font-family:var(--font-mono);font-size:12px;color:var(--fg-3);
+  grid-column:2;grid-row:1 / span 2;align-self:center;white-space:nowrap}
+.edu{color:var(--fg-3);font-size:14.5px;margin:18px 0 0}
+h2.log{margin:0 0 12px}
+@media(max-width:520px){
+  h1{font-size:31px;letter-spacing:-0.8px}
+  .wrap{padding-top:28px;overflow-wrap:anywhere}
+  .roles li{grid-template-columns:1fr;gap:2px}
+  .roles time{grid-column:1;grid-row:auto;white-space:normal;margin-top:2px}
+}
+</style></head><body><div class="wrap">
+<header class="site"><a class="brand" href="/">vishalghule<b>.in</b></a></header>
+<span class="over">AI PLAYBOOK / 25 NOV 2026</span>
+<h1>The retry that charged the customer twice</h1>
+<p class="lede">A timeout tells you nothing about whether your side effect ran — and in an agent that retries on its own, that ambiguity turns one charge into two. The fix is one idempotency key per action, not per attempt.</p>
+<div class="meta"><span class="pill">analysis</span><span>2026-11-25</span><span>·</span><span>5 min read</span><span>·</span><a href="https://www.instagram.com/p/DgKtLdXlNC0/">on Instagram</a></div>
+<article><h2>The failure nobody designs for</h2>
+<p>You wire an agent to a real API. A tool call charges a card, sends an email, opens a ticket, books a slot. It works in testing, because in testing the network is perfect.</p>
+<p>In production the network is not perfect, and the first time a request times out you discover the thing the happy path hid: <strong>a timeout is silence, not a &quot;no.&quot;</strong> The call can fail in three different places, and from the caller&#x27;s side all three are indistinguishable — a timeout and no answer:</p>
+<ul><li><strong>Before the request reaches the server.</strong> Nothing happened. A retry is safe.</li><li><strong>Halfway through.</strong> The server started the work and something broke. Maybe the charge ran, maybe it didn&#x27;t.</li><li><strong>After the work finished.</strong> The money moved, then the connection dropped before the response got back.</li></ul>
+<p>Stripe&#x27;s engineering team starts their idempotency write-up from exactly this blunt fact. The client cannot tell these apart, so to converge its own state with the server&#x27;s it does the only thing it can: it retries. And without a guard, <strong>&quot;retry&quot; means &quot;do the whole thing again.&quot;</strong> The charge that already succeeded in case three runs a second time.</p>
+<h2>Idempotency: the same operation, once</h2>
+<p>An operation is <em>idempotent</em> if doing it twice has the same effect as doing it once. <code>GET</code> only reads. <code>DELETE</code> the same row twice and it is just as deleted. The problem is the mutating verbs — <code>POST</code>, <code>PATCH</code> — where a second execution is a second real-world event.</p>
+<p>The fix is to make those endpoints idempotent with an <strong>idempotency key</strong>: a unique string the client generates, attached to the request in an <code>Idempotency-Key</code> header. The server correlates the key with the state of that request on its end. The crucial property, in Stripe&#x27;s own words, is that the operation &quot;can be called any number of times while guaranteeing that side effects only occur once.&quot;</p>
+<p>The mechanics on the server are deliberately simple:</p>
+<p>1. First time a key arrives: no record exists, so run the work and store the response (status code and body) against the key. 2. Any later request with the same key: a record exists, so <strong>return the stored response and run nothing.</strong></p>
+<p>That is the whole idea. A key does not mean &quot;try again from scratch.&quot; It means &quot;tell me what happened to <em>this</em> request.&quot;</p>
+<h2>The one rule everything hinges on</h2>
+<p>Read the client side carefully, because this is where agents break it:</p>
+<blockquote>The key is made <strong>once, before the first attempt</strong>, and every retry of that operation reuses it.</blockquote>
+<p>Stripe suggests a V4 UUID or any string with enough entropy to avoid collisions, up to 255 characters, and warns against putting sensitive data (emails, personal identifiers) in the key. The randomness is not the point — the <em>stability across retries</em> is. A perfectly random key regenerated on every attempt is worse than useless: it guarantees a new operation each time.</p>
+<h2>Why agents walk straight into it</h2>
+<p>In a plain client you write the retry loop yourself and it is obvious where the key comes from. An agent stack hides the retries across layers, and each layer looks like a fresh request:</p>
+<ul><li>The model SDK retries on a transport error.</li><li>Your orchestration loop retries a failed tool call.</li><li>The agent itself, after a crash or a restart, <strong>re-decides</strong> to call the tool — a retry that does not know it is a retry.</li></ul>
+<p>If the key is minted inside any of those — <code>Idempotency-Key: str(uuid4())</code> computed at call time — every retry carries a brand-new key, and the server, correctly, treats each as a distinct operation. You get the double charge the mechanism was supposed to prevent, and your logs show two clean <code>200</code>s.</p>
+<p>The fix is to source the key from the <strong>logical action, not the attempt.</strong> Derive it deterministically from something stable — <code>order_id</code> + the operation name — or generate it once and persist it <em>before</em> the first call, so every retry and every process restart reads the same value. The model is non-deterministic; the key must not be. It has to come from the task, stored outside the model&#x27;s context, where a restart can find it again.</p>
+<h2>What it looks like in the terminal</h2>
+<pre><code># timed out. did the charge run? unknown
+$ POST /charges   Idempotency-Key: 9f2c...a1
+curl (28): operation timed out
+# retry mints a new uuid4() -&gt; new key
+$ POST /charges   Idempotency-Key: 4b8e...c7
+200  amount=1000   &lt;- a SECOND charge
+$ POST /charges   Idempotency-Key: 9f2c...a1
+200  Idempotent-Replay: true  (no new charge)</code></pre>
+<p>Same key in, stored response back — the charge runs once. A fresh key per attempt is a fresh charge. (Ids and timings illustrative; the headers and replay behaviour are Stripe&#x27;s.)</p>
+<h2>The server side, and its edges</h2>
+<p>If you implement the receiving end yourself — because the side effect is your own service, not a vendor&#x27;s — Brandur Leach&#x27;s Postgres design and the IETF <code>Idempotency-Key</code> draft give you the shape:</p>
+<table><thead><tr><th>Situation</th><th>Response</th></tr></thead><tbody><tr><td>Key unseen</td><td>Insert a partial record (keyed on account + key), do the work, store the result</td></tr><tr><td>Key seen, completed</td><td>Return the stored response, run nothing</td></tr><tr><td>Key seen, still in flight</td><td><code>409 Conflict</code> — tell the client to retry for a definite answer later</td></tr><tr><td>Same key, different params</td><td>Error — this is misuse, not a replay</td></tr><tr><td>Transient failure (429 / 503)</td><td>Do <strong>not</strong> store a result; remove the partial so the client can retry</td></tr></tbody></table>
+<p>A unique index on <code>(account_id, idempotency_key)</code> makes the duplicate check atomic. The same key may map to different requests across different accounts, so scope the uniqueness by account.</p>
+<h2>Where it stops</h2>
+<ul><li><strong>Keys expire.</strong> Stripe retains API v1 keys for at least 24 hours, then may prune them; reuse after pruning executes a <em>new</em> request. (Stripe&#x27;s newer API v2 widens this to a 30-day window and retries failed work to completion rather than replaying a stored response — check which you&#x27;re on.) Keep your own retries inside the window and reconcile, don&#x27;t retry blindly, past it.</li><li><strong>It makes retries safe; it does not make them polite.</strong> You still need capped attempts, backoff and jitter, or you trade a double charge for a retry storm.</li><li><strong>It protects one operation, not a workflow.</strong> &quot;Charge, then ship&quot; needs the key on the charge <em>and</em> a way to resume the ship step; an idempotency key on the outer call won&#x27;t make a multi-step side effect atomic.</li></ul>
+<h2>The one line to keep</h2>
+<p>A retry is only safe if it carries a key it didn&#x27;t just invent. Generate it once, tie it to the action, and reuse it on every attempt — then a timeout stops being a question you can&#x27;t answer and becomes one the server answers for you.</p></article>
+<div class="sources"><span class="over">Sources</span><ol><li><a href="https://stripe.com/blog/idempotency">Stripe, &quot;Designing robust and predictable APIs with idempotency&quot;, Stripe Blog</a></li><li><a href="https://docs.stripe.com/api/idempotent_requests">Stripe, &quot;Idempotent requests&quot;, Stripe API Reference</a></li><li><a href="https://docs.stripe.com/error-low-level">Stripe, &quot;Advanced error handling&quot;, Stripe Docs</a></li><li><a href="https://docs.stripe.com/api-v2-overview">Stripe, &quot;API v2 overview — idempotency&quot;, Stripe Docs</a></li><li><a href="https://brandur.org/idempotency-keys">Brandur Leach, &quot;Implementing Stripe-like Idempotency Keys in Postgres&quot;</a></li><li><a href="https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-00">IETF, &quot;The Idempotency-Key HTTP Header Field (draft)&quot;</a></li></ol></div>
+<div class="asposted"><span class="over">As posted</span><div class="strip"><img src="/media/2026-11-25-evening/01.jpg" loading="lazy" alt="Carousel slide 1 of 6: The retry that charged the customer twice"><img src="/media/2026-11-25-evening/02.jpg" loading="lazy" alt="Carousel slide 2 of 6: The retry that charged the customer twice"><img src="/media/2026-11-25-evening/03.jpg" loading="lazy" alt="Carousel slide 3 of 6: The retry that charged the customer twice"><img src="/media/2026-11-25-evening/04.jpg" loading="lazy" alt="Carousel slide 4 of 6: The retry that charged the customer twice"><img src="/media/2026-11-25-evening/05.jpg" loading="lazy" alt="Carousel slide 5 of 6: The retry that charged the customer twice"><img src="/media/2026-11-25-evening/06.jpg" loading="lazy" alt="Carousel slide 6 of 6: The retry that charged the customer twice"></div></div>
+<p class="tags">#aiagents #aiautomation #llm #idempotency #sre #devops #softwareengineering #distributedsystems #payments #apidesign #reliability #buildinpublic</p>
+<footer><a href="https://instagram.com/vishu_builds">Instagram</a></footer>
+</div></body></html>

@@ -156,24 +156,31 @@ h2.log{margin:0 0 12px}
 <div class="meta"><span class="pill">analysis</span><span>2026-10-12</span><span>·</span><span>5 min read</span><span>·</span><a href="https://www.instagram.com/p/DeZYvVFDWJt/">on Instagram</a></div>
 <article><h2>The symptom</h2>
 <p>A cron job that renders Instagram carousels died on import:</p>
-<p>``<code> ImportError: cannot import name &#x27;_imaging&#x27; from &#x27;PIL&#x27; </code>``</p>
+<pre><code>ImportError: cannot import name &#x27;_imaging&#x27; from &#x27;PIL&#x27;</code></pre>
 <p>The same script, run by hand in a terminal two minutes later, worked. Same machine, same user, same file. The usual suspects were all clean: Pillow was installed, the install was recent, nothing had been upgraded that day.</p>
 <p>The standard move at that point is to stop trusting <code>python3</code> on <code>PATH</code> and pin the interpreter explicitly. I did. <code>/usr/local/bin/python3</code>, which resolves through a symlink to <code>Python.framework/Versions/3.12/bin/python3</code> — CPython 3.12.5. Still broke.</p>
 <p>That is the interesting part. Pinning the binary is supposed to be the end of the ambiguity, and it did not move the failure at all.</p>
 <h2>What was actually happening</h2>
 <p>A probe script, run twice from the same shell, with the only difference being the environment:</p>
-<p>```</p>
-<h3>A: inherited env, absolute system interpreter</h3>
-<p>exe        : /usr/local/bin/python3 PYTHONPATH : /Users/.../venv/lib/python3.14/site-packages PIL        : FAIL ImportError cannot import name &#x27;_imaging&#x27; resolved from: /Users/.../venv/lib/python3.14/site-packages/PIL/__init__.py</p>
-<h3>B: same interpreter, PYTHONPATH stripped</h3>
-<p>exe        : /usr/local/bin/python3 PYTHONPATH : &lt;unset&gt; PIL        : OK 11.1.0 /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/PIL/__init__.py ```</p>
+<pre><code>### A: inherited env, absolute system interpreter
+exe        : /usr/local/bin/python3
+PYTHONPATH : /Users/.../venv/lib/python3.14/site-packages
+PIL        : FAIL ImportError cannot import name &#x27;_imaging&#x27;
+  resolved from: /Users/.../venv/lib/python3.14/site-packages/PIL/__init__.py
+
+### B: same interpreter, PYTHONPATH stripped
+exe        : /usr/local/bin/python3
+PYTHONPATH : &lt;unset&gt;
+PIL        : OK 11.1.0 /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/PIL/__init__.py</code></pre>
 <p>The agent runtime that launches the cron job exports <code>PYTHONPATH</code> at its own virtualenv, which is built on CPython <strong>3.14</strong>. Every process it spawns inherits that variable, and so does every process those spawn.</p>
 <p>Printing <code>sys.path</code> under the inherited environment shows the whole mechanism in one screen:</p>
 <table><thead><tr><th>index</th><th>entry</th></tr></thead><tbody><tr><td>0</td><td>the script&#x27;s own directory</td></tr><tr><td>1</td><td><code>.../venv/lib/<strong>python3.14</strong>/site-packages</code> ← <code>PYTHONPATH</code></td></tr><tr><td>2–4</td><td>the 3.12 standard library and <code>lib-dynload</code></td></tr><tr><td>5</td><td><code>.../python3.12/site-packages</code> ← the real one</td></tr></tbody></table>
 <p><code>PYTHONPATH</code> is not appended. It is prepended, ahead of the standard library itself. So a 3.12 interpreter went shopping in a 3.14 virtualenv and found a perfectly real <code>PIL/</code> directory there — Pillow 12.3.0, as it happens, versus the healthy 11.1.0 one level further down the path.</p>
 <h2>Why the error named the wrong thing</h2>
 <p>Pillow is a hybrid package. <code>PIL/__init__.py</code> is pure Python and imports into any interpreter without complaint. The actual image work lives in C extensions, and those carry an ABI tag in the filename:</p>
-<p>``<code> _imaging.cpython-314-darwin.so _imagingft.cpython-314-darwin.so _imagingcms.cpython-314-darwin.so </code>``</p>
+<pre><code>_imaging.cpython-314-darwin.so
+_imagingft.cpython-314-darwin.so
+_imagingcms.cpython-314-darwin.so</code></pre>
 <p><code>cpython-314</code> means CPython 3.14 on this platform. A 3.12 interpreter will not load it — it will not even consider it a candidate, because the tag does not match. So the import of <code>PIL</code> succeeded, the import of <code>PIL._imaging</code> found nothing, and the traceback blamed a package that was not the one I installed, at a path I never typed.</p>
 <p>That is the part worth keeping. The error message pointed at Pillow. Pillow had nothing to do with it. The failure was an environment variable set by a different process, three layers up, for a different interpreter.</p>
 <h2>The general shape of the bug</h2>
@@ -182,7 +189,7 @@ h2.log{margin:0 0 12px}
 <p>The SRE reading of it: this is configuration arriving through an undeclared channel. Everything we do to make config auditable — version it, validate it at startup, fail loud on an unknown value — we skip entirely for the environment block, which is the one input every process accepts silently.</p>
 <h2>The fix</h2>
 <p>Not in the code. The code never sees the decision; by the time <code>import PIL</code> runs, <code>sys.path</code> has already been built. So the fix has to be at the process boundary, which means a launcher:</p>
-<p>``<code>bash exec env -u PYTHONPATH -u VIRTUAL_ENV &quot;$PY&quot; &quot;$IG_DIR/scripts/$script&quot; &quot;$@&quot; </code>``</p>
+<pre><code>exec env -u PYTHONPATH -u VIRTUAL_ENV &quot;$PY&quot; &quot;$IG_DIR/scripts/$script&quot; &quot;$@&quot;</code></pre>
 <p>Three things are doing work in that line:</p>
 <p>1. <code>env -u</code> removes the inherited variables rather than overwriting them. Setting <code>PYTHONPATH=&quot;&quot;</code> is not the same thing — an empty string can still be interpreted as a path entry. 2. <code>$PY</code> pins the interpreter, which is still necessary, just not sufficient. 3. <code>exec</code> replaces the shell rather than forking under it, so the process tree stays flat and signals reach the real process.</p>
 <p>Then the operational half: <strong>no script is ever invoked directly.</strong> Everything goes through <code>./ig &lt;command&gt;</code>, and the preflight check asserts that the import actually works before cron is allowed to trust the pipeline. A rule that is only written in a comment gets violated the first time someone is in a hurry, including by me.</p>

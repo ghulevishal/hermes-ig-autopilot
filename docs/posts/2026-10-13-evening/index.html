@@ -157,7 +157,8 @@ h2.log{margin:0 0 12px}
 <article><p>The job is supposed to be boring. At 09:00 a cron job researches a topic, writes a spec, renders six slides, writes an article, and publishes. End to end it is about three minutes of real work: the renderer produces six 1080×1350 JPEGs in well under a second, and the publish chain is ten HTTP calls.</p>
 <p>It fired at 09:00. It published at 22:50.</p>
 <h2>What the run log actually said</h2>
-<p>``<code> RuntimeError: Operation interrupted: waiting for model response (922.4s elapsed). </code>``</p>
+<pre><code>RuntimeError: Operation interrupted:
+  waiting for model response (922.4s elapsed).</code></pre>
 <p>That is the morning job. The evening job died the same way at 1537.8 seconds. Two runs, 15 and 25 minutes, both spent waiting on a single model response that never arrived, both killed by the runtime with everything they had produced still in memory.</p>
 <p>The part that matters is not the hang. Upstream APIs hang; that is ordinary. The problem is what the hang cost: the run had already researched the topic, written the spec, and rendered all six slides to disk. All of it was discarded, and the next run started from zero and did it again.</p>
 <h2>Three omissions, in order of severity</h2>

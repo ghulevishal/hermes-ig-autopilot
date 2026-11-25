@@ -158,7 +158,9 @@ h2.log{margin:0 0 12px}
 <p>Take a service where each server responds in about 10ms, but with a 99th-percentile latency of one second. One request in a hundred is slow. On a single server that is easy to shrug off.</p>
 <p>Now make one user request wait on 100 of those servers in parallel and return only when all have answered. The chance that <em>every</em> server lands in its fast 99% is <code>0.99^100 = 0.366</code>. So <strong>63% of user requests take more than a second</strong> — even though every individual server is fast 99% of the time.</p>
 <p>The formula is worth memorising, because it is the whole point:</p>
-<p>``<code> P(request is slow) = 1 - (1 - p)^n p = per-server probability of a slow response n = number of servers the request fans out to </code>``</p>
+<pre><code>P(request is slow) = 1 - (1 - p)^n
+  p = per-server probability of a slow response
+  n = number of servers the request fans out to</code></pre>
 <table><thead><tr><th>per-server slow</th><th>fan-out</th><th>slow requests</th></tr></thead><tbody><tr><td>1 in 100</td><td>100</td><td>63%</td></tr><tr><td>1 in 1,000</td><td>100</td><td>9.5%</td></tr><tr><td>1 in 1,000</td><td>1,000</td><td>63%</td></tr><tr><td>1 in 10,000</td><td>2,000</td><td>18%</td></tr></tbody></table>
 <p>Rare slowness becomes common slowness. Your p99 is not set by your code; it is set by the worst machine any single request happens to touch.</p>
 <h2>Why this is now an agent problem</h2>

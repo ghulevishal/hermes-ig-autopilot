@@ -157,7 +157,9 @@ h2.log{margin:0 0 12px}
 <article><p>An agent finishes a task and reports success. You believe it, because what else is there?</p>
 <p>That report is a claim about what the agent <em>attempted</em>. Whether the thing actually happened is a separate fact, and the two come apart more often than you would expect.</p>
 <p>Here is the run history of one small, unattended pipeline — a job that publishes a post twice a day:</p>
-<p>``<code> completed   8 failed      7 unknown     4   &lt;- side effects unverifiable </code>``</p>
+<pre><code>completed   8
+failed      7
+unknown     4   &lt;- side effects unverifiable</code></pre>
 <p>Nineteen runs. Four of them ended in a state where the system genuinely could not say whether the work had been done. The process was killed after the side effect but before the record of it, so both &quot;it posted&quot; and &quot;it didn&#x27;t&quot; were consistent with the evidence.</p>
 <p>Worse: the pipeline&#x27;s own log claimed 11 posts existed. The platform API said 10. The log had been the thing I was trusting.</p>
 <h2>Why &quot;done&quot; is unreliable</h2>
@@ -169,9 +171,13 @@ h2.log{margin:0 0 12px}
 <h2>Read-back verification</h2>
 <p>The pattern is old and boring, which is why it works: <strong>after an action with side effects, re-read the result from the system of record and assert on it.</strong></p>
 <p>Concretely, instead of:</p>
-<p>``<code> result = publish(post) log(&quot;published&quot;, result.id)        # trusting the return value </code>``</p>
+<pre><code>result = publish(post)
+log(&quot;published&quot;, result.id)        # trusting the return value</code></pre>
 <p>do:</p>
-<p>``<code> result = publish(post) check  = api.get_media(result.id)  # ask the platform, not yourself assert check.id == result.id log(&quot;verified&quot;, check.id, check.permalink) </code>``</p>
+<pre><code>result = publish(post)
+check  = api.get_media(result.id)  # ask the platform, not yourself
+assert check.id == result.id
+log(&quot;verified&quot;, check.id, check.permalink)</code></pre>
 <p>The difference is where the truth comes from. The first version records what your code believes. The second records what the outside world confirms.</p>
 <p>Three rules make this practical:</p>
 <p><strong>The system of record is never your own log.</strong> Your log records intent; the external system records reality. When they disagree, your log is the one that is lying. If you find yourself reconciling two of your own files, you have not verified anything.</p>

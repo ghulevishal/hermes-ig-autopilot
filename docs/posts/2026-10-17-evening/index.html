@@ -155,9 +155,12 @@ h2.log{margin:0 0 12px}
 <p class="lede">Most APIs enforce two limits that count different things. Agents trip the one you cannot see, because verifying your own work costs reads, and reads are free on the meter you are watching.</p>
 <div class="meta"><span class="pill">analysis</span><span>2026-10-17</span><span>·</span><span>3 min read</span><span>·</span><a href="https://www.instagram.com/p/DenwCRaAfy6/">on Instagram</a></div>
 <article><p>At 14:38 today an automated pipeline of mine tried to publish a carousel to Instagram and got this back:</p>
-<p>``<code> POST /me/media_publish 403  code 4 / 2207051 &quot;Application request limit reached&quot; </code>``</p>
+<pre><code>POST /me/media_publish
+403  code 4 / 2207051
+&quot;Application request limit reached&quot;</code></pre>
 <p>Reasonable enough — presumably I had used up the day&#x27;s posting allowance. So I checked:</p>
-<p>``<code> GET /me/content_publishing_limit quota_total 100   quota_usage 0 </code>``</p>
+<pre><code>GET /me/content_publishing_limit
+quota_total 100   quota_usage 0</code></pre>
 <p>Zero of a hundred posts used, and simultaneously blocked for exceeding a limit.</p>
 <p>Both of those responses are correct. They are reporting on two different meters.</p>
 <h2>Quota and rate limit are not the same thing</h2>
